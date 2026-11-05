@@ -1,0 +1,68 @@
+{
+  "mercury": {
+    "layers": [
+      {"id": "core", "name": "Inti", "image_url": "assets/textures/2k_mercury.jpg", "description": "Inti Merkurius diduga sebagian cair dan sangat besar."},
+      {"id": "mantle", "name": "Mantel", "image_url": "assets/textures/2k_mercury.jpg", "description": "Mantel tipis batuan silikat."},
+      {"id": "crust", "name": "Kerak", "image_url": "assets/textures/2k_mercury.jpg", "description": "Kerak berbatu dengan kawah."},
+      {"id": "surface", "name": "Permukaan", "image_url": "assets/textures/2k_mercury.jpg", "description": "Permukaan penuh kawah seperti Bulan."},
+      {"id": "atmosphere", "name": "Atmosfer", "image_url": "assets/textures/2k_mercury.jpg", "description": "Eksosfer sangat tipis."}
+    ]
+  },
+  "venus": {
+    "layers": [
+      {"id": "core", "name": "Inti", "image_url": "assets/textures/2k_venus_surface.jpg", "description": "Inti besi sebagian cair."},
+      {"id": "mantle", "name": "Mantel", "image_url": "assets/textures/2k_venus_surface.jpg", "description": "Mantel batuan panas."},
+      {"id": "crust", "name": "Kerak", "image_url": "assets/textures/2k_venus_surface.jpg", "description": "Kerak basaltik."},
+      {"id": "surface", "name": "Permukaan", "image_url": "assets/textures/2k_venus_surface.jpg", "description": "Permukaan gunung berapi dan dataran."},
+      {"id": "atmosphere", "name": "Atmosfer", "image_url": "assets/textures/2k_venus_surface.jpg", "description": "Atmosfer tebal CO2 dengan awan asam."}
+    ]
+  },
+  "earth": {
+    "layers": [
+      {"id": "core", "name": "Inti Bumi", "image_url": "assets/textures/2k_earth_daymap.jpg", "description": "Inti Bumi terdiri dari besi dan nikel."},
+      {"id": "mantle", "name": "Mantel", "image_url": "assets/textures/2k_earth_daymap.jpg", "description": "Mantel adalah lapisan batuan panas."},
+      {"id": "crust", "name": "Kerak", "image_url": "assets/textures/2k_earth_daymap.jpg", "description": "Kerak adalah lapisan terluar."},
+      {"id": "surface", "name": "Permukaan", "image_url": "assets/textures/2k_earth_daymap.jpg", "description": "Permukaan Bumi terdiri dari daratan dan lautan."},
+      {"id": "atmosphere", "name": "Atmosfer", "image_url": "assets/textures/2k_earth_daymap.jpg", "description": "Atmosfer melindungi Bumi dari radiasi."},
+      {"id": "moon", "name": "Bulan", "image_url": "assets/textures/2k_moon.jpg", "description": "Bulan adalah satelit alami Bumi."}
+    ]
+  },
+  "mars": {
+    "layers": [
+      {"id": "core", "name": "Inti", "image_url": "assets/textures/2k_mars.jpg", "description": "Inti Mars sebagian cair."},
+      {"id": "mantle", "name": "Mantel", "image_url": "assets/textures/2k_mars.jpg", "description": "Mantel batuan silikat."},
+      {"id": "crust", "name": "Kerak", "image_url": "assets/textures/2k_mars.jpg", "description": "Kerak tipis."},
+      {"id": "surface", "name": "Permukaan", "image_url": "assets/textures/2k_mars.jpg", "description": "Permukaan merah dengan Olympus Mons."},
+      {"id": "atmosphere", "name": "Atmosfer", "image_url": "assets/textures/2k_mars.jpg", "description": "Atmosfer tipis CO2."}
+    ]
+  },
+  "jupiter": {
+    "layers": [
+      {"id": "core", "name": "Inti", "image_url": "assets/textures/2k_jupiter.jpg", "description": "Inti batuan/Es."},
+      {"id": "mantle", "name": "Mantel", "image_url": "assets/textures/2k_jupiter.jpg", "description": "Lapisan hidrogen metalik."},
+      {"id": "surface", "name": "Permukaan", "image_url": "assets/textures/2k_jupiter.jpg", "description": "Tidak ada permukaan padat; awan gas."},
+      {"id": "atmosphere", "name": "Atmosfer", "image_url": "assets/textures/2k_jupiter.jpg", "description": "Atmosfer hidrogen/helium dengan badai."}
+    ]
+  },
+  "saturn": {
+    "layers": [
+      {"id": "core", "name": "Inti", "image_url": "assets/textures/2k_saturn.jpg", "description": "Inti batuan/Es."},
+      {"id": "mantle", "name": "Mantel", "image_url": "assets/textures/2k_saturn.jpg", "description": "Hidrogen metalik."},
+      {"id": "surface", "name": "Permukaan", "image_url": "assets/textures/2k_saturn.jpg", "description": "Awan gas dengan cincin."}
+    ]
+  },
+  "uranus": {
+    "layers": [
+      {"id": "core", "name": "Inti", "image_url": "assets/textures/2k_uranus.jpg", "description": "Inti batuan/Es."},
+      {"id": "mantle", "name": "Mantel", "image_url": "assets/textures/2k_uranus.jpg", "description": "Es panas."},
+      {"id": "surface", "name": "Permukaan", "image_url": "assets/textures/2k_uranus.jpg", "description": "Awan gas biru-hijau."}
+    ]
+  },
+  "neptune": {
+    "layers": [
+      {"id": "core", "name": "Inti", "image_url": "assets/textures/2k_neptune.jpg", "description": "Inti batuan/Es."},
+      {"id": "mantle", "name": "Mantel", "image_url": "assets/textures/2k_neptune.jpg", "description": "Es panas."},
+      {"id": "surface", "name": "Permukaan", "image_url": "assets/textures/2k_neptune.jpg", "description": "Awan gas biru dengan badai."}
+    ]
+  }
+}
