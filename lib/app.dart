@@ -1,11 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:orbite/core/theme/app_theme.dart';
 import 'package:orbite/features/auth/presentation/pages/login_page.dart';
+import 'package:orbite/features/constellation/presentation/pages/constellation_page.dart';
+import 'package:orbite/features/home/presentation/pages/cosmic_explore.dart';
 import 'package:orbite/features/interior/presentation/pages/interior_page.dart';
+import 'package:orbite/features/moon_phases/presentation/pages/moon_phases_page.dart';
 import 'package:orbite/features/onboarding/presentation/pages/onboarding_page.dart';
+import 'package:orbite/features/planet_detail/presentation/pages/planet_detail_page.dart';
 import 'package:orbite/features/planet_focus/presentation/pages/planet_focus_page.dart';
+import 'package:orbite/features/quiz/presentation/pages/quiz_page.dart';
 import 'package:orbite/features/solar_system/presentation/pages/home_page.dart';
+import 'package:orbite/features/solar_system/presentation/pages/planet_compare_page.dart';
 import 'package:orbite/features/solar_system/presentation/pages/planet_list_page.dart';
+import 'package:orbite/features/solar_system/presentation/pages/solar_system_page.dart';
+
+import 'home/trivia_route.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -34,16 +43,44 @@ class App extends StatelessWidget {
       case '/home':
         page = const HomePage();
         break;
+      case '/explore':
+        page = const CosmicExplore();
+        break;
       case '/planets':
         page = const PlanetListPage();
+        break;
+      case '/compare':
+        page = const PlanetComparePage();
+        break;
+      case '/solar-system':
+        page = const SolarSystemPage();
+        break;
+      case '/moon-phases':
+        page = const MoonPhasesPage();
+        break;
+      case '/constellations':
+        page = const ConstellationPage();
+        break;
+      case '/trivia':
+        page = const TriviaRoutePage();
         break;
       case '/focus':
         page = PlanetFocusPage(
           planetName: settings.arguments as String? ?? 'Planet',
         );
         break;
+      case '/detail':
+        page = PlanetDetailPage(
+          planetName: settings.arguments as String? ?? 'Planet',
+        );
+        break;
       case '/interior':
         page = InteriorPage(
+          planetName: settings.arguments as String? ?? 'Planet',
+        );
+        break;
+      case '/quiz':
+        page = QuizPage(
           planetName: settings.arguments as String? ?? 'Planet',
         );
         break;

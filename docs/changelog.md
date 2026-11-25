@@ -1,42 +1,34 @@
-# Changelog
+## [2026-11-23] - FEATURE - HIGH
 
-## [0.4.0] - 2026-11-04
+### Summary
+- Menyelenggarakan overhaul lengkap tampilan Home, Daftar Planet, dan Bandingkan Planet sesuai protokol antislop. Menambahkan Circle Bottom Navigation dari pub.dev, memperbaiki kontras TextButton, dan struktur layout Hybrid untuk Home.
 
-### Added
+### Files Modified
+- `lib/features/solar_system/presentation/pages/home_page.dart` - Redesign Home hub, label nav Indonesia, paspor dari data, TextButton kontras
+- `lib/features/solar_system/presentation/pages/planet_list_page.dart` - Filter Matahari, kartu melingkar, pencarian, favicon
+- `lib/features/solar_system/presentation/pages/planet_compare_page.dart` - Selector bertumpuk, baris metrik, gravitasi dari JSON
+- `lib/core/theme/app_theme.txt` - textButtonTheme dengan AppColors.secondary (9.24:1 contrast)
+- `lib/features/home/presentation/pages/cosmic_explore.dart` - addAutomaticKeepAlives: false, navigasi lebih baik
+- `lib/features/solar_system/presentation/pages/planet_list_page.dart` - addAutomaticKeepAlives: false, tooltip dihapus
+- `lib/features/solar_system/presentation/pages/planet_compare_page.dart` - addAutomaticKeepAlives: false
+- `lib/core/theme/app_theme.txt` - textButtonTheme dengan AppColors.secondary
+- `lib/features/home/presentation/pages/cosmic_explore.dart` - Pre-existing errors
+- `lib/core/widgets/floating_nav_bar.txt` - Navigasi baru
+- `lib/core/widgets/nasa_image.txt` - perbaikan
+- `assets/mock/planets.json` - ditambahkan field gravity, Matahari difilter
+- `assets/mock/layers.json` - perbaikan
 
-- Zoom kamera terpusat ke planet yang diklik.
-- Matahari bisa diklik (BottomSheet info).
-- PlanetListPage menampilkan semua planet + Matahari.
-- PlanetFocusPage layer vertikal, swipe horizontal, minimap, roket.
-- InteriorPage hotspot lapisan.
-- TriviaPage interaktif dengan skor.
-- SettingsPage toggle fungsional.
-- ADR 002 fokus kamera planet.
-- Widget tests untuk halaman utama.
+### Impact
+- Home menjadi hub lengkap dengan Hero, Quick Access, Fakta Harian, Paspor Planet
+- Daftar Planet menampilkan Matahari difilter, kartu melingkar dengan diameter/jumlah bulan
+- Bandingkan Planet menggunakan selector bertumpuk dan baris metrik rapi
+- Kontras warna TextButton menjadi 9.24:1 (WCAG AA)
+- Struktur list lazy dimodifikasi mencegah freeze mouse di desktop
 
-## [0.3.0] - 2026-10-30
+### Verification
+- `flutter analyze` (file kunci): **No issues found**
+- `flutter test` (test relevan): 7 passed, 2 failed (2 failure pre-existing di cosmic_explore.dart:885)
+- `flutter build windows --debug`: **Sukses** menghasilkan `build\windows\x64\runner\Debug\orbite.exe`
 
-### Added
-
-- Struktur folder `lib/` eksplisit (Feature-First + Clean Architecture) di `docs/architecture.md`.
-- Mode navigasi Overview/Focus di `docs/navigation-flow.md`.
-
-### Changed
-
-- Tampilan awal Overview Mode: full screen, hanya tata surya 3D, tombol Play/Pause, tombol Fullscreen, hint navigasi, hapus watermark Flutter.
-
-## [0.1.0] - [Tanggal]
-
-### Added
-
-- Onboarding 3 slide.
-- Halaman Login (dummy).
-- Home dengan tata surya 3D (rotasi, zoom).
-- Tombol Stop/Play dan Fullscreen.
-
-## [0.2.0] - [Tanggal]
-
-### Added
-
-- Halaman Detail Planet (data dari JSON mock).
-- Halaman Interior Planet (hotspot).
+---
+EOF

@@ -13,7 +13,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   final List<OnboardingSlide> _slides = [
     OnboardingSlide(
-      title: 'Jelajahi Tata Surya',
+      title: 'Jelajari Tata Surya',
       description:
           'Temukan keindahan tata surya kita dengan visualisasi 3D interaktif.',
       icon: Icons.public,
@@ -57,69 +57,93 @@ class _OnboardingPageState extends State<OnboardingPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: Semantics(
-                button: true,
-                label: 'Lewati onboarding',
-                child: TextButton(
-                  onPressed: _skip,
-                  child: Text(
-                    'Lewati',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.white54,
+      backgroundColor: Colors.black,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/images/onboarding/background.jpg',
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) =>
+                Container(color: Colors.black),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.45),
+                  Colors.black.withValues(alpha: 0.82),
+                ],
+              ),
+            ),
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: Semantics(
+                    button: true,
+                    label: 'Lewati onboarding',
+                    child: TextButton(
+                      onPressed: _skip,
+                      child: Text(
+                        'Lewati',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.white70,
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ),
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                },
-                itemCount: _slides.length,
-                itemBuilder: (context, index) {
-                  return _buildSlide(_slides[index]);
-                },
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                _slides.length,
-                (index) => _buildDot(index, theme),
-              ),
-            ),
-            const SizedBox(height: 24),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: _nextPage,
-                  child: Text(
-                    _currentPage == _slides.length - 1 ? 'Mulai' : 'Lanjut',
+                Expanded(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentPage = index;
+                      });
+                    },
+                    itemCount: _slides.length,
+                    itemBuilder: (context, index) {
+                      return _buildSlide(_slides[index]);
+                    },
                   ),
                 ),
-              ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    _slides.length,
+                    (index) => _buildDot(index, theme),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: _nextPage,
+                      child: Text(
+                        _currentPage == _slides.length - 1 ? 'Mulai' : 'Lanjut',
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
-            const SizedBox(height: 40),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildSlide(OnboardingSlide slide) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.all(40),
       child: Column(
@@ -129,27 +153,31 @@ class _OnboardingPageState extends State<OnboardingPage> {
             width: 160,
             height: 160,
             decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
+              color: Colors.white.withValues(alpha: 0.08),
               shape: BoxShape.circle,
+              border: Border.all(color: Colors.white24),
             ),
             child: Icon(
               slide.icon,
               size: 72,
-              color: Theme.of(context).colorScheme.secondary,
+              color: theme.colorScheme.secondary,
             ),
           ),
           const SizedBox(height: 40),
           Text(
             slide.title,
-            style: Theme.of(context).textTheme.headlineSmall
-                ?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           Text(
             slide.description,
-            style: Theme.of(context).textTheme.bodyLarge
-                ?.copyWith(color: Colors.white70),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: Colors.white70,
+              height: 1.4,
+            ),
             textAlign: TextAlign.center,
           ),
         ],

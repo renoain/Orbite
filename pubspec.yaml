@@ -39,6 +39,8 @@ dependencies:
   three_dart_jsm: ^0.0.10
   google_fonts: ^6.2.1
   equatable: ^3.0.0
+  circle_bottom_navigation: ^2.0.0
+  shared_preferences: ^2.5.6
 
 dependency_overrides: 
   http: ^1.0.0
@@ -52,7 +54,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^6.0.0
+  flutter_lints: ^5.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -67,6 +69,8 @@ flutter:
 
   assets:
     - assets/images/
+    - assets/images/onboarding/
+    - assets/images/login/
     - assets/textures/
     - assets/models/
     - assets/fonts/

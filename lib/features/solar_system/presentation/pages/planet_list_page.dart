@@ -13,6 +13,8 @@ class PlanetListPage extends StatefulWidget {
 
 class _PlanetListPageState extends State<PlanetListPage> {
   late Future<List<Map<String, dynamic>>> _future;
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
 
   @override
   void initState() {
@@ -20,10 +22,19 @@ class _PlanetListPageState extends State<PlanetListPage> {
     _future = _load();
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
   Future<List<Map<String, dynamic>>> _load() async {
     final jsonString = await rootBundle.loadString('assets/mock/planets.json');
     final list = json.decode(jsonString) as List<dynamic>;
-    return list.cast<Map<String, dynamic>>();
+    return list
+        .cast<Map<String, dynamic>>()
+        .where((planet) => planet['id'] != 'sun')
+        .toList();
   }
 
   void _retry() {
@@ -32,10 +43,25 @@ class _PlanetListPageState extends State<PlanetListPage> {
     });
   }
 
+  void _clearSearch() {
+    _searchController.clear();
+    setState(() => _query = '');
+  }
+
   int _crossAxisCount(double width) {
     if (width >= 900) return 4;
     if (width >= 600) return 3;
     return 2;
+  }
+
+  List<Map<String, dynamic>> _filter(List<Map<String, dynamic>> planets) {
+    final q = _query.trim().toLowerCase();
+    if (q.isEmpty) return planets;
+    return planets.where((planet) {
+      final name = (planet['name'] as String? ?? '').toLowerCase();
+      final desc = (planet['description'] as String? ?? '').toLowerCase();
+      return name.contains(q) || desc.contains(q);
+    }).toList();
   }
 
   @override
@@ -58,8 +84,8 @@ class _PlanetListPageState extends State<PlanetListPage> {
               onAction: _retry,
             );
           }
-          final planets = snapshot.data;
-          if (planets == null || planets.isEmpty) {
+          final allPlanets = snapshot.data;
+          if (allPlanets == null || allPlanets.isEmpty) {
             return _StateMessage(
               icon: Icons.public_off,
               title: 'Tidak ada data planet',
@@ -67,32 +93,94 @@ class _PlanetListPageState extends State<PlanetListPage> {
               onAction: _retry,
             );
           }
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              return GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: _crossAxisCount(constraints.maxWidth),
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.85,
+          final planets = _filter(allPlanets);
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                      controller: _searchController,
+                      onChanged: (value) => setState(() => _query = value),
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Cari planet...',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: _query.isNotEmpty
+                            ? IconButton(
+                                tooltip: 'Hapus pencarian',
+                                icon: const Icon(Icons.clear),
+                                onPressed: _clearSearch,
+                              )
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text(
+                          '${planets.length} planet',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.white70,
+                          ),
+                        ),
+                        const Spacer(),
+                        if (_query.isNotEmpty && planets.isNotEmpty)
+                          TextButton(
+                            onPressed: _clearSearch,
+                            child: const Text('Hapus pencarian'),
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
-                itemCount: planets.length,
-                itemBuilder: (context, index) {
-                  final planet = planets[index];
-                  final name = planet['name'] as String? ?? '';
-                  final desc = planet['description'] as String? ?? '';
-                  final url = planet['image_url'] as String? ?? '';
-                  return _PlanetCard(
-                    name: name,
-                    description: desc,
-                    imageUrl: url,
-                    onTap: () =>
-                        Navigator.pushNamed(context, '/focus', arguments: name),
-                  );
-                },
-              );
-            },
+              ),
+              Expanded(
+                child: planets.isEmpty
+                    ? _StateMessage(
+                        icon: Icons.search_off,
+                        title: 'Tidak ada planet untuk "$_query"',
+                        actionLabel: 'Hapus pencarian',
+                        onAction: _clearSearch,
+                      )
+                    : LayoutBuilder(
+                        builder: (context, constraints) {
+                          return GridView.builder(
+                            padding: const EdgeInsets.all(16),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: _crossAxisCount(
+                                constraints.maxWidth,
+                              ),
+                              mainAxisSpacing: 12,
+                              crossAxisSpacing: 12,
+                              childAspectRatio: 0.85,
+                            ),
+                            itemCount: planets.length,
+                            itemBuilder: (context, index) {
+                              final planet = planets[index];
+                              final name = planet['name'] as String? ?? '';
+                              final desc =
+                                  planet['description'] as String? ?? '';
+                              final url = planet['image_url'] as String? ?? '';
+                              return _PlanetCard(
+                                name: name,
+                                description: desc,
+                                imageUrl: url,
+                                onTap: () => Navigator.pushNamed(
+                                  context,
+                                  '/focus',
+                                  arguments: name,
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+              ),
+            ],
           );
         },
       ),

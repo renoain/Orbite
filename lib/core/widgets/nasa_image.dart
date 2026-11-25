@@ -60,21 +60,28 @@ class NasaImage extends StatelessWidget {
   }
 
   Widget _errorPlaceholder(double? height, double? width) {
-    return Container(
+    return SizedBox(
       height: height,
       width: width,
-      color: Colors.grey[850],
-      alignment: Alignment.center,
-      child: const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.broken_image, color: Colors.white54, size: 32),
-          SizedBox(height: 4),
-          Text(
-            'Gagal memuat gambar',
-            style: TextStyle(color: Colors.white54, fontSize: 10),
+      child: ColoredBox(
+        color: Colors.grey[850]!,
+        child: const FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Padding(
+            padding: EdgeInsets.all(4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.broken_image, color: Colors.white54, size: 32),
+                SizedBox(height: 4),
+                Text(
+                  'Gagal memuat gambar',
+                  style: TextStyle(color: Colors.white54, fontSize: 10),
+                ),
+              ],
+            ),
           ),
-        ],
+        ),
       ),
     );
   }

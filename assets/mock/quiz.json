@@ -1,0 +1,47 @@
+{
+  "mercury": [
+    {"q": "Merkurius adalah planet ke berapa dari Matahari?", "choices": ["Pertama", "Kedua", "Ketiga", "Keempat"], "answer": 0},
+    {"q": "Berapa lama satu hari di Merkurius (rotasi)?", "choices": ["24 jam", "59 hari", "88 hari", "365 hari"], "answer": 1},
+    {"q": "Mengapa Merkurius memiliki banyak kawah?", "choices": ["Aktivitas vulkanik", "Tidak ada atmosfer pelindung", "Angin kuat", "Air cair"], "answer": 1}
+  ],
+  "venus": [
+    {"q": "Venus dikenal sebagai?", "choices": ["Bintang Fajar", "Bintang Sore", "Keduanya", "Tidak ada"], "answer": 2},
+    {"q": "Atmosfer Venus terutama terdiri dari?", "choices": ["Nitrogen", "Oksigen", "CO2", "Hidrogen"], "answer": 2},
+    {"q": "Suhu permukaan Venus sekitar?", "choices": ["-100 C", "0 C", "200 C", "465 C"], "answer": 3}
+  ],
+  "earth": [
+    {"q": "Berapa persentase air di permukaan Bumi?", "choices": ["50%", "71%", "80%", "90%"], "answer": 1},
+    {"q": "Lapisan atmosfer terluar adalah?", "choices": ["Troposfer", "Stratosfer", "Mesosfer", "Eksosfer"], "answer": 3},
+    {"q": "Bumi memiliki berapa bulan alami?", "choices": ["0", "1", "2", "3"], "answer": 1}
+  ],
+  "mars": [
+    {"q": "Warna merah Mars disebabkan oleh?", "choices": ["Besi oksida", "Belurang", "Karbon", "Amonia"], "answer": 0},
+    {"q": "Gunung tertinggi di Mars adalah?", "choices": ["Everest", "Olympus Mons", "Mauna Loa", "Etna"], "answer": 1},
+    {"q": "Mars memiliki berapa bulan?", "choices": ["0", "1", "2", "4"], "answer": 2}
+  ],
+  "jupiter": [
+    {"q": "Jupiter adalah planet ke berapa terbesar?", "choices": ["Terbesar", "Kedua", "Ketiga", "Terkecil"], "answer": 0},
+    {"q": "Bintik Merah Besar adalah?", "choices": ["Gunung", "Badai", "Danau", "Kawah"], "answer": 1},
+    {"q": "Berapa lama satu hari di Jupiter?", "choices": ["10 jam", "24 jam", "59 hari", "1 tahun"], "answer": 0}
+  ],
+  "saturn": [
+    {"q": "Cincin Saturnus terbuat dari?", "choices": ["Gas", "Es dan batu", "Logam", "Debu"], "answer": 1},
+    {"q": "Saturnus adalah planet gas raksasa ke?", "choices": ["Pertama", "Kedua", "Ketiga", "Keempat"], "answer": 1},
+    {"q": "Berapa bulan Saturnus (diketahui)?", "choices": ["10", "50", "80+", "200"], "answer": 2}
+  ],
+  "uranus": [
+    {"q": "Uranus berotasi dengan kemiringan?", "choices": ["23 derajat", "45 derajat", "90 derajat", "98 derajat"], "answer": 3},
+    {"q": "Warna biru Uranus disebabkan oleh?", "choices": ["Air", "Metana", "Amonia", "Helium"], "answer": 1},
+    {"q": "Uranus ditemukan oleh?", "choices": ["Galileo", "Newton", "Herschel", "Kepler"], "answer": 2}
+  ],
+  "neptune": [
+    {"q": "Angin tercepat di Tata Surya ada di?", "choices": ["Jupiter", "Saturnus", "Uranus", "Neptunus"], "answer": 3},
+    {"q": "Neptunus adalah planet ke?", "choices": ["Ke-7", "Ke-8", "Ke-9", "Ke-10"], "answer": 1},
+    {"q": "Bulan terbesar Neptunus adalah?", "choices": ["Titan", "Europa", "Triton", "Ganymede"], "answer": 2}
+  ],
+  "sun": [
+    {"q": "Matahari terdiri dari?", "choices": ["Batu", "Gas (H dan He)", "Es", "Logam"], "answer": 1},
+    {"q": "Suhu inti Matahari sekitar?", "choices": ["5.500 C", "1 juta C", "15 juta C", "100 juta C"], "answer": 2},
+    {"q": "Energi Matahari berasal dari?", "choices": ["Fusi nuklir", "Fisi nuklir", "Pembakaran", "Gravitasi"], "answer": 0}
+  ]
+}

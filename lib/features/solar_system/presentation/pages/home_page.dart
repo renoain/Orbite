@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:orbite/core/constants/nasa_images.dart';
 import 'package:orbite/core/widgets/floating_nav_bar.dart';
 import 'package:orbite/core/widgets/nasa_image.dart';
-import 'package:orbite/features/solar_system/presentation/widgets/home_scene.dart';
-import 'package:orbite/features/solar_system/presentation/widgets/planet_info_bottom_sheet.dart';
+import 'package:orbite/features/home/presentation/pages/cosmic_explore.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,52 +13,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-  bool _isPlaying = true;
-  bool _isFullscreen = false;
-
-  void _showPlanetInfo(String planetId) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => PlanetInfoBottomSheet(
-        planetId: planetId,
-        onViewDetail: () {
-          Navigator.pop(context);
-          Navigator.pushNamed(
-            context,
-            '/focus',
-            arguments: _getPlanetName(planetId),
-          );
-        },
-      ),
-    );
-  }
-
-  String _getPlanetName(String planetId) {
-    final names = {
-      'mercury': 'Merkurius',
-      'venus': 'Venus',
-      'earth': 'Bumi',
-      'mars': 'Mars',
-      'jupiter': 'Jupiter',
-      'saturn': 'Saturnus',
-      'uranus': 'Uranus',
-      'neptune': 'Neptunus',
-      'pluto': 'Pluto',
-      'sun': 'Matahari',
-    };
-    return names[planetId] ?? 'Planet';
-  }
-
-  void _toggleFullscreen() {
-    setState(() {
-      _isFullscreen = !_isFullscreen;
-    });
-    SystemChrome.setEnabledSystemUIMode(
-      _isFullscreen ? SystemUiMode.immersiveSticky : SystemUiMode.edgeToEdge,
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +23,7 @@ class _HomePageState extends State<HomePage> {
           IndexedStack(
             index: _currentIndex,
             children: [
-              _buildExplore(),
+              const CosmicExplore(),
               const LearnPage(),
               const TriviaPage(),
               const SettingsPage(),
@@ -92,43 +44,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildExplore() {
-    return Stack(
-      children: [
-        HomeScene(isPlaying: _isPlaying, onPlanetTap: _showPlanetInfo),
-        Positioned(
-          bottom: 96,
-          right: 16,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              FloatingActionButton(
-                heroTag: 'fullscreen',
-                tooltip: _isFullscreen ? 'Keluar layar penuh' : 'Layar penuh',
-                onPressed: _toggleFullscreen,
-                child: Icon(
-                  _isFullscreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                ),
-              ),
-              const SizedBox(height: 16),
-              FloatingActionButton(
-                heroTag: 'playPause',
-                tooltip: _isPlaying ? 'Jeda animasi' : 'Putar animasi',
-                onPressed: () {
-                  setState(() {
-                    _isPlaying = !_isPlaying;
-                  });
-                },
-                child: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

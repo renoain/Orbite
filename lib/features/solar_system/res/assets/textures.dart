@@ -11,6 +11,9 @@ const String textureSaturn = '$_textureDir/saturn.jpg';
 const String textureUranus = '$_textureDir/uranus.jpg';
 const String textureVenus = '$_textureDir/venus.jpg';
 
+/// Moons
+const String textureMoon = '$_textureDir/moon.jpg';
+
 /// Stars
 const String textureStars = '$_textureDir/stars.jpg';
 const String textureSun = '$_textureDir/sun.jpg';
