@@ -1,8 +1,9 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:orbite/core/widgets/nasa_image.dart';
+import 'package:orbite/features/solar_system/presentation/widgets/rotating_planet_3d.dart';
 
 class PlanetListPage extends StatefulWidget {
   const PlanetListPage({super.key});
@@ -164,17 +165,8 @@ class _PlanetListPageState extends State<PlanetListPage> {
                               final name = planet['name'] as String? ?? '';
                               final desc =
                                   planet['description'] as String? ?? '';
-                              final url = planet['image_url'] as String? ?? '';
-                              return _PlanetCard(
-                                name: name,
-                                description: desc,
-                                imageUrl: url,
-                                onTap: () => Navigator.pushNamed(
-                                  context,
-                                  '/focus',
-                                  arguments: name,
-                                ),
-                              );
+                              final texture = planet['texture'] as String? ?? '';
+                              return _PlanetCard(texture: texture, name: name, desc: desc, onTap: () => Navigator.pushNamed(context, '/focus', arguments: name));
                             },
                           );
                         },
@@ -189,63 +181,53 @@ class _PlanetListPageState extends State<PlanetListPage> {
 }
 
 class _PlanetCard extends StatelessWidget {
+  final String texture;
   final String name;
-  final String description;
-  final String imageUrl;
+  final String desc;
   final VoidCallback onTap;
 
   const _PlanetCard({
+    required this.texture,
     required this.name,
-    required this.description,
-    required this.imageUrl,
+    required this.desc,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Planet $name',
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: onTap,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: imageUrl.isNotEmpty
-                    ? NasaImage(url: imageUrl, fit: BoxFit.cover)
-                    : Container(color: Colors.grey[800]),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = math.min(
+          constraints.maxWidth,
+          constraints.maxHeight * 0.78,
+        );
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            RotatingPlanet3D(texturePath: texture, size: size),
+            const SizedBox(height: 8),
+            Text(
+              name,
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-              Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  children: [
-                    Text(
-                      name,
-                      style: Theme.of(context).textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      description,
-                      style: Theme.of(context).textTheme.bodySmall
-                          ?.copyWith(color: Colors.white54),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              desc,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.white54,
               ),
-            ],
-          ),
-        ),
-      ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        );
+      },
     );
   }
 }

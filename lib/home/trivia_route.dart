@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:orbite/features/solar_system/presentation/pages/home_page.dart';
+import 'package:orbite/features/trivia/presentation/pages/trivia_page.dart';
 
 class TriviaRoutePage extends StatelessWidget {
   const TriviaRoutePage({super.key});

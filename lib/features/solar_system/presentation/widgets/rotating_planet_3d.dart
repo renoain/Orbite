@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_gl/flutter_gl.dart';
@@ -32,6 +30,7 @@ class _RotatingPlanet3DState extends State<RotatingPlanet3D>
 
   bool _is3DReady = false;
   bool _initStarted = false;
+  bool _failed = false;
 
   @override
   void initState() {
@@ -53,7 +52,9 @@ class _RotatingPlanet3DState extends State<RotatingPlanet3D>
       if (mounted) {
         setState(() {
           _is3DReady = false;
+          _failed = true;
         });
+        _controller.stop();
       }
     }
   }
@@ -176,25 +177,23 @@ class _RotatingPlanet3DState extends State<RotatingPlanet3D>
     return SizedBox(
       width: size,
       height: size,
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, child) {
-          return Transform.rotate(
-            angle: _controller.value * 2 * math.pi,
-            child: child,
-          );
-        },
-        child: ClipOval(
-          child: widget.texturePath.isNotEmpty
-              ? Image.asset(
-                  widget.texturePath,
-                  fit: BoxFit.cover,
-                  width: size,
-                  height: size,
-                  errorBuilder: (context, error, stackTrace) =>
-                      Container(color: Colors.grey[800]),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Color(0xFF1A1B1E),
+        ),
+        child: Center(
+          child: _failed
+              ? Icon(
+                  Icons.public_off,
+                  size: size * 0.28,
+                  color: Colors.white38,
                 )
-              : Container(color: Colors.grey[800]),
+              : SizedBox(
+                  width: size * 0.22,
+                  height: size * 0.22,
+                  child: const CircularProgressIndicator(strokeWidth: 2),
+                ),
         ),
       ),
     );

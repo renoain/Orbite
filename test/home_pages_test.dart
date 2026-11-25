@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:orbite/features/solar_system/presentation/pages/home_page.dart';
+import 'package:orbite/features/trivia/presentation/pages/trivia_page.dart';
 
 void main() {
   testWidgets('TriviaPage shows score', (tester) async {

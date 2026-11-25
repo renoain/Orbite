@@ -16,9 +16,15 @@ import 'package:three_dart_jsm/three_dart_jsm.dart' as three_jsm;
 enum SceneState { loading, loaded, error }
 
 class HomeScene extends StatefulWidget {
-  const HomeScene({super.key, this.isPlaying = true, this.onPlanetTap});
+  const HomeScene({
+    super.key,
+    this.isPlaying = true,
+    this.speed = 1.0,
+    this.onPlanetTap,
+  });
 
   final bool isPlaying;
+  final double speed;
   final void Function(String planetId)? onPlanetTap;
 
   @override
@@ -551,7 +557,8 @@ class _HomeSceneState extends State<HomeScene> with TickerProviderStateMixin {
       return;
     }
 
-    final deltaSeconds = delta.clamp(0.0, 0.05);
+    final speed = widget.speed <= 0 ? 1.0 : widget.speed;
+    final deltaSeconds = (delta.clamp(0.0, 0.05) * speed).clamp(0.0, 0.25);
 
     _orbit?.update();
 

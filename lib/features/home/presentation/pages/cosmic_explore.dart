@@ -36,9 +36,7 @@ class _CosmicExploreState extends State<CosmicExplore> {
       _error = null;
     });
     try {
-      final jsonString = await rootBundle.loadString(
-        'assets/mock/planets.json',
-      );
+      final jsonString = await rootBundle.loadString('assets/mock/planets.json');
       final list = json.decode(jsonString) as List<dynamic>;
       final planets = list
           .cast<Map<String, dynamic>>()
@@ -93,7 +91,6 @@ class _CosmicExploreState extends State<CosmicExplore> {
         onAction: _load,
       );
     }
-
     final featured = _featuredPlanet;
     if (featured == null) {
       return _HomeMessage(
@@ -103,14 +100,11 @@ class _CosmicExploreState extends State<CosmicExplore> {
         onAction: _load,
       );
     }
-
     return LayoutBuilder(
       builder: (context, constraints) {
         final wide = constraints.maxWidth >= 600;
-        final heroHeight = (constraints.maxWidth * (wide ? 0.52 : 1.18)).clamp(
-          wide ? 320.0 : 372.0,
-          460.0,
-        );
+        final heroHeight = (constraints.maxWidth * (wide ? 0.52 : 1.18))
+            .clamp(wide ? 320.0 : 372.0, 460.0);
         return SingleChildScrollView(
           padding: EdgeInsets.only(
             bottom: MediaQuery.paddingOf(context).bottom + 104,
@@ -372,21 +366,21 @@ class _HeroPlanet extends StatelessWidget {
       ),
     );
   }
+}
 
-  double widthForOrbit(BuildContext context) =>
-      MediaQuery.sizeOf(context).width * 0.9;
+double widthForOrbit(BuildContext context) =>
+    MediaQuery.sizeOf(context).width * 0.9;
 
-  String _formatDistance(double value) {
-    final parts = value.toStringAsFixed(1).split('.');
-    return '${_groupDigits(int.parse(parts[0]))},${parts[1]} jt km';
-  }
+String _formatDistance(double value) {
+  final parts = value.toStringAsFixed(1).split('.');
+  return '${_groupDigits(int.parse(parts[0]))},${parts[1]} jt km';
+}
 
-  String _groupDigits(int value) {
-    return value.toString().replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (_) => '.',
-    );
-  }
+String _groupDigits(int value) {
+  return value.toString().replaceAllMapped(
+    RegExp(r'\B(?=(\d{3})+(?!\d))'),
+    (_) => '.',
+  );
 }
 
 class _HeroOrbitPainter extends CustomPainter {
@@ -449,28 +443,22 @@ class _ExploreRail extends StatelessWidget {
 
   static const _destinations = [
     (
-      title: 'Tata Surya 3D',
-      note: 'Model interaktif',
-      image: 'assets/textures/saturn.jpg',
+      title: 'Solar System',
+      note: 'Model 3D interaktif',
+      image: 'assets/images/home/solar_system.jpg',
       route: '/solar-system',
     ),
     (
       title: 'Fase Bulan',
       note: 'Siklus satu bulan',
-      image: 'assets/textures/moon.jpg',
+      image: 'assets/images/home/moon_phase.jpg',
       route: '/moon-phases',
     ),
     (
       title: 'Konstelasi',
       note: 'Peta langit malam',
-      image: 'assets/textures/stars.jpg',
+      image: 'assets/images/home/constellation.jpg',
       route: '/constellations',
-    ),
-    (
-      title: 'Trivia',
-      note: 'Kuis singkat',
-      image: 'assets/textures/mars.jpg',
-      route: '/trivia',
     ),
   ];
 
@@ -505,12 +493,12 @@ class _ExploreRail extends StatelessWidget {
                   itemCount: _destinations.length,
                   separatorBuilder: (_, _) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {
-                    final item = _destinations[index];
+                    final dest = _destinations[index];
                     return _DestinationCard(
-                      title: item.title,
-                      note: item.note,
-                      image: item.image,
-                      onTap: () => Navigator.pushNamed(context, item.route),
+                      title: dest.title,
+                      note: dest.note,
+                      image: dest.image,
+                      onTap: () => Navigator.pushNamed(context, dest.route),
                     );
                   },
                 ),
@@ -526,13 +514,13 @@ class _ExploreRail extends StatelessWidget {
 class _DestinationCard extends StatelessWidget {
   const _DestinationCard({
     required this.title,
-    required this.note,
+    this.note = '',
     required this.image,
     required this.onTap,
   });
 
   final String title;
-  final String note;
+  final String? note;
   final String image;
   final VoidCallback onTap;
 
@@ -541,7 +529,7 @@ class _DestinationCard extends StatelessWidget {
     final theme = Theme.of(context);
     return Semantics(
       button: true,
-      label: '$title. $note',
+      label: '$title. ${note ?? ''}',
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
         child: SizedBox(
@@ -585,7 +573,7 @@ class _DestinationCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          note,
+                          note ?? '',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: theme.textTheme.labelSmall?.copyWith(
@@ -699,9 +687,7 @@ class _DailyFactState extends State<_DailyFact> {
                   Text(
                     _fact.isEmpty ? 'Memuat fakta...' : _fact,
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: _fact.isEmpty
-                          ? _subtle
-                          : Colors.white.withValues(alpha: 0.86),
+                      color: _fact.isEmpty ? _subtle : Colors.white.withValues(alpha: 0.86),
                       height: 1.55,
                     ),
                   ),
@@ -863,28 +849,28 @@ class _PassportPlanet extends StatelessWidget {
                                     image: AssetImage(texture),
                                     fit: BoxFit.cover,
                                   ),
-                            color: const Color(0xFF1A1B1E),
+                          color: const Color(0xFF1A1B1E),
+                        ),
+                      ),
+                    ),
+                    if (visited)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          width: 18,
+                          height: 18,
+                          decoration: const BoxDecoration(
+                            color: AppColors.secondary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.check,
+                            size: 12,
+                            color: Colors.black,
                           ),
                         ),
                       ),
-                      if (visited)
-                        Positioned(
-                          right: 0,
-                          bottom: 0,
-                          child: Container(
-                            width: 18,
-                            height: 18,
-                            decoration: const BoxDecoration(
-                              color: AppColors.secondary,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.check,
-                              size: 12,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
                     ],
                   ),
                 ),
