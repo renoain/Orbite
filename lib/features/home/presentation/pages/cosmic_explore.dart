@@ -7,6 +7,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:orbite/core/theme/app_theme.dart';
 import 'package:orbite/core/widgets/nasa_image.dart';
 
+const _hairline = Color(0x1FFFFFFF);
+const _muted = Color(0xB3FFFFFF);
+const _subtle = Color(0x8AFFFFFF);
+
 class CosmicExplore extends StatefulWidget {
   const CosmicExplore({super.key});
 
@@ -32,7 +36,9 @@ class _CosmicExploreState extends State<CosmicExplore> {
       _error = null;
     });
     try {
-      final jsonString = await rootBundle.loadString('assets/mock/planets.json');
+      final jsonString = await rootBundle.loadString(
+        'assets/mock/planets.json',
+      );
       final list = json.decode(jsonString) as List<dynamic>;
       final planets = list
           .cast<Map<String, dynamic>>()
@@ -77,141 +83,219 @@ class _CosmicExploreState extends State<CosmicExplore> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator());
+      return const _HomeSkeleton();
     }
     if (_error != null) {
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.cloud_off, color: Colors.white54, size: 48),
-              const SizedBox(height: 12),
-              Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white70),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _load,
-                icon: const Icon(Icons.refresh),
-                label: const Text('Coba Lagi'),
-              ),
-            ],
-          ),
-        ),
+      return _HomeMessage(
+        title: 'Planet tidak bisa dimuat',
+        message: _error!,
+        actionLabel: 'Muat ulang',
+        onAction: _load,
       );
     }
 
     final featured = _featuredPlanet;
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _HomeHeader(),
-          const SizedBox(height: 16),
-          if (featured != null) ...[
-            _HeroPlanetCard(
-              planet: featured,
-              onTap: () => _openFocus(featured['name'] as String? ?? ''),
-            ),
-            const SizedBox(height: 16),
-          ],
-          const _QuickAccessGrid(),
-          const SizedBox(height: 16),
-          const _DailyFactCard(),
-          const SizedBox(height: 16),
-          _PassportCard(
-            planets: _planets,
-            visited: _visited.toSet(),
-            onOpen: _openFocus,
+    if (featured == null) {
+      return _HomeMessage(
+        title: 'Belum ada planet',
+        message: 'Data planet masih kosong. Muat ulang untuk mencoba lagi.',
+        actionLabel: 'Muat ulang',
+        onAction: _load,
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final wide = constraints.maxWidth >= 600;
+        final heroHeight = (constraints.maxWidth * (wide ? 0.52 : 1.18)).clamp(
+          wide ? 320.0 : 372.0,
+          460.0,
+        );
+        return SingleChildScrollView(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.paddingOf(context).bottom + 104,
           ),
-        ],
-      ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _HeroPlanet(
+                planet: featured,
+                height: heroHeight,
+                onOpen: () => _openFocus(featured['name'] as String? ?? ''),
+              ),
+              const _ExploreRail(),
+              const _DailyFact(),
+              _Passport(
+                planets: _planets,
+                visited: _visited.toSet(),
+                onOpen: _openFocus,
+              ),
+              const SizedBox(height: 32),
+            ],
+          ),
+        );
+      },
     );
   }
 }
 
-class _HomeHeader extends StatelessWidget {
-  const _HomeHeader();
+class _OrbitMark extends StatelessWidget {
+  const _OrbitMark({this.size = 26});
+
+  final double size;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Orbite',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          'Jelajah 3D',
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: AppColors.secondary,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
+    return SizedBox(
+      width: size,
+      height: size,
+      child: const CustomPaint(painter: _OrbitMarkPainter(AppColors.secondary)),
     );
   }
 }
 
-class _HeroPlanetCard extends StatelessWidget {
-  const _HeroPlanetCard({required this.planet, required this.onTap});
+class _OrbitMarkPainter extends CustomPainter {
+  const _OrbitMarkPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = size.center(Offset.zero);
+    final radius = size.width / 2 - 2;
+    final ring = Paint()
+      ..color = color.withValues(alpha: 0.55)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+    final orbit = Rect.fromCenter(
+      center: center,
+      width: radius * 2,
+      height: radius * 1.15,
+    );
+    canvas.drawOval(orbit, ring);
+    canvas.drawCircle(
+      Offset(center.dx + radius * 0.86, center.dy - radius * 0.3),
+      2.2,
+      Paint()..color = color,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_OrbitMarkPainter oldDelegate) =>
+      oldDelegate.color != color;
+}
+
+class _HeroPlanet extends StatelessWidget {
+  const _HeroPlanet({
+    required this.planet,
+    required this.height,
+    required this.onOpen,
+  });
 
   final Map<String, dynamic> planet;
-  final VoidCallback onTap;
+  final double height;
+  final VoidCallback onOpen;
+
+  String get _imagePath {
+    final texture = planet['texture'] as String? ?? '';
+    if (texture.isNotEmpty) return texture;
+    return planet['image_url'] as String? ?? '';
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final name = planet['name'] as String? ?? '';
+    final name = planet['name'] as String? ?? 'Planet';
     final description = planet['description'] as String? ?? '';
-    final texture = planet['texture'] as String? ?? '';
-    final imageUrl = planet['image_url'] as String? ?? texture;
+    final distance = (planet['distance'] as num?)?.toDouble();
+    final diameter = (planet['diameter'] as num?)?.toInt();
+    final safeTop = MediaQuery.paddingOf(context).top;
 
     return SizedBox(
-      height: 300,
-      child: Card(
-        clipBehavior: Clip.antiAlias,
-        margin: EdgeInsets.zero,
-        elevation: 4,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: InkWell(
-          onTap: onTap,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              if (imageUrl.isNotEmpty)
-                NasaImage(url: imageUrl, fit: BoxFit.cover)
-              else
-                Container(color: Colors.grey[900]),
-              Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.15),
-                      Colors.black.withValues(alpha: 0.88),
-                    ],
-                    stops: const [0.35, 1],
-                  ),
+      height: height,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ColoredBox(
+            color: const Color(0xFF0E1116),
+            child: _imagePath.isEmpty
+                ? const SizedBox.shrink()
+                : NasaImage(url: _imagePath, fit: BoxFit.cover),
+          ),
+          const DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0xCC000000),
+                  Color(0x33000000),
+                  Color(0x00000000),
+                  Color(0xE6000000),
+                ],
+                stops: [0, 0.22, 0.48, 1],
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Align(
+                alignment: const Alignment(0.9, -0.42),
+                child: SizedBox(
+                  width: widthForOrbit(context),
+                  height: height * 0.55,
+                  child: const CustomPaint(painter: _HeroOrbitPainter()),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.all(16),
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(20, safeTop + 12, 20, 0),
+            child: Align(
+              alignment: Alignment.topCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
+                child: Row(
+                  children: [
+                    const _OrbitMark(size: 28),
+                    const SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Orbite',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: -0.4,
+                            height: 1.1,
+                          ),
+                        ),
+                        Text(
+                          'Jelajah 3D',
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: AppColors.secondary,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 720),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Planet hari ini',
@@ -220,187 +304,216 @@ class _HeroPlanetCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 4),
                     Text(
                       name,
-                      style: theme.textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.displaySmall?.copyWith(
                         color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.8,
+                        height: 1.05,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 10),
+                    Wrap(
+                      spacing: 18,
+                      runSpacing: 6,
+                      children: [
+                        if (distance != null)
+                          _HeroStat(
+                            value: _formatDistance(distance),
+                            label: 'dari Matahari',
+                          ),
+                        if (diameter != null)
+                          _HeroStat(
+                            value: '${_groupDigits(diameter)} km',
+                            label: 'diameter',
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
                     Text(
                       description,
-                      maxLines: 3,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.white70,
-                        height: 1.35,
+                        color: _muted,
+                        height: 1.4,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: ElevatedButton.icon(
-                        onPressed: onTap,
-                        icon: const Icon(Icons.rocket_launch, size: 18),
-                        label: const Text('Lihat Detail'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.secondary,
-                          foregroundColor: Colors.black,
-                          minimumSize: const Size(0, 44),
+                    const SizedBox(height: 14),
+                    FilledButton(
+                      onPressed: onOpen,
+                      style: FilledButton.styleFrom(
+                        backgroundColor: AppColors.secondary,
+                        foregroundColor: Colors.black,
+                        minimumSize: const Size(0, 48),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        'Buka $name',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
+    );
+  }
+
+  double widthForOrbit(BuildContext context) =>
+      MediaQuery.sizeOf(context).width * 0.9;
+
+  String _formatDistance(double value) {
+    final parts = value.toStringAsFixed(1).split('.');
+    return '${_groupDigits(int.parse(parts[0]))},${parts[1]} jt km';
+  }
+
+  String _groupDigits(int value) {
+    return value.toString().replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (_) => '.',
     );
   }
 }
 
-class _QuickAccessGrid extends StatelessWidget {
-  const _QuickAccessGrid();
+class _HeroOrbitPainter extends CustomPainter {
+  const _HeroOrbitPainter();
 
-  static const _items = [
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = AppColors.secondary.withValues(alpha: 0.28)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    final center = Offset(size.width * 0.55, size.height * 0.42);
+    for (final scale in [1.0, 0.72]) {
+      canvas.drawOval(
+        Rect.fromCenter(
+          center: center,
+          width: size.width * 0.92 * scale,
+          height: size.height * 0.86 * scale,
+        ),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_HeroOrbitPainter oldDelegate) => false;
+}
+
+class _HeroStat extends StatelessWidget {
+  const _HeroStat({required this.value, required this.label});
+
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Text(
+          label,
+          style: theme.textTheme.labelSmall?.copyWith(color: _subtle),
+        ),
+      ],
+    );
+  }
+}
+
+class _ExploreRail extends StatelessWidget {
+  const _ExploreRail();
+
+  static const _destinations = [
     (
       title: 'Tata Surya 3D',
-      subtitle: 'Eksplorasi',
-      icon: Icons.public,
+      note: 'Model interaktif',
+      image: 'assets/textures/saturn.jpg',
       route: '/solar-system',
-      color: Color(0xFF0D2137),
-      accent: Color(0xFF4FC3F7),
     ),
     (
       title: 'Fase Bulan',
-      subtitle: 'Pantau fase',
-      icon: Icons.nightlight_round,
+      note: 'Siklus satu bulan',
+      image: 'assets/textures/moon.jpg',
       route: '/moon-phases',
-      color: Color(0xFF1A0F2E),
-      accent: Color(0xFFB388FF),
     ),
     (
       title: 'Konstelasi',
-      subtitle: 'Pola bintang',
-      icon: Icons.auto_awesome,
+      note: 'Peta langit malam',
+      image: 'assets/textures/stars.jpg',
       route: '/constellations',
-      color: Color(0xFF121212),
-      accent: Color(0xFFFFD54F),
     ),
     (
       title: 'Trivia',
-      subtitle: 'Uji pengetahuan',
-      icon: Icons.quiz,
+      note: 'Kuis singkat',
+      image: 'assets/textures/mars.jpg',
       route: '/trivia',
-      color: Color(0xFF2E1A0A),
-      accent: Color(0xFFFFB74D),
     ),
   ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Quick Access',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            GridView.count(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              childAspectRatio: 1.4,
-              children: [
-                for (final item in _items)
-                  _QuickAccessTile(
-                    title: item.title,
-                    subtitle: item.subtitle,
-                    icon: item.icon,
-                    route: item.route,
-                    background: item.color,
-                    accent: item.accent,
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _QuickAccessTile extends StatelessWidget {
-  const _QuickAccessTile({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.route,
-    required this.background,
-    required this.accent,
-  });
-
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final String route;
-  final Color background;
-  final Color accent;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: title,
-      child: InkWell(
-        onTap: () => Navigator.pushNamed(context, route),
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: background,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white12),
-          ),
+    return Padding(
+      padding: const EdgeInsets.only(top: 26),
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 720),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Icon(icon, color: accent, size: 28),
-              const SizedBox(height: 4),
-              Text(
-                title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Jelajahi',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.white54, fontSize: 11),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 196,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: _destinations.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 12),
+                  itemBuilder: (context, index) {
+                    final item = _destinations[index];
+                    return _DestinationCard(
+                      title: item.title,
+                      note: item.note,
+                      image: item.image,
+                      onTap: () => Navigator.pushNamed(context, item.route),
+                    );
+                  },
+                ),
               ),
             ],
           ),
@@ -410,15 +523,98 @@ class _QuickAccessTile extends StatelessWidget {
   }
 }
 
-class _DailyFactCard extends StatefulWidget {
-  const _DailyFactCard();
+class _DestinationCard extends StatelessWidget {
+  const _DestinationCard({
+    required this.title,
+    required this.note,
+    required this.image,
+    required this.onTap,
+  });
+
+  final String title;
+  final String note;
+  final String image;
+  final VoidCallback onTap;
 
   @override
-  State<_DailyFactCard> createState() => _DailyFactCardState();
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: '$title. $note',
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: SizedBox(
+          width: 152,
+          child: Material(
+            color: const Color(0xFF141517),
+            child: InkWell(
+              onTap: onTap,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  NasaImage(url: image, fit: BoxFit.cover),
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Color(0x00000000),
+                          Color(0x66000000),
+                          Color(0xF2000000),
+                        ],
+                        stops: [0.35, 0.62, 1],
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          note,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            color: _subtle,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _DailyFactCardState extends State<_DailyFactCard> {
+class _DailyFact extends StatefulWidget {
+  const _DailyFact();
+
+  @override
+  State<_DailyFact> createState() => _DailyFactState();
+}
+
+class _DailyFactState extends State<_DailyFact> {
   String _fact = '';
+  bool _failed = false;
 
   @override
   void initState() {
@@ -430,70 +626,96 @@ class _DailyFactCardState extends State<_DailyFactCard> {
     try {
       final raw = await rootBundle.loadString('assets/mock/daily_facts.json');
       final facts = (json.decode(raw) as List<dynamic>).cast<String>();
-      if (facts.isEmpty || !mounted) return;
-      final index = DateTime.now().day % facts.length;
-      setState(() => _fact = facts[index]);
-    } catch (_) {
-      if (mounted) {
-        setState(() => _fact = 'Mars memiliki gunung tertinggi di tata surya.');
+      if (!mounted) return;
+      if (facts.isEmpty) {
+        setState(() => _failed = true);
+        return;
       }
+      final index = DateTime.now().day % facts.length;
+      setState(() {
+        _fact = facts[index];
+        _failed = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _failed = true);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: const Color(0xFF3E2C00),
-                borderRadius: BorderRadius.circular(12),
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 720),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 30, 20, 0),
+          child: Container(
+            padding: const EdgeInsets.only(top: 18, bottom: 20),
+            decoration: const BoxDecoration(
+              border: Border(
+                top: BorderSide(color: _hairline),
+                bottom: BorderSide(color: _hairline),
               ),
-              child: const Icon(Icons.lightbulb_outline, color: Colors.amber),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Fakta Harian',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: AppColors.secondary,
-                      fontWeight: FontWeight.w600,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const _OrbitMark(size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Fakta hari ini',
+                      style: theme.textTheme.labelMedium?.copyWith(
+                        color: AppColors.secondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                if (_failed)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          'Fakta hari ini belum bisa dimuat.',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: _subtle,
+                          ),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _loadFact,
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.secondary,
+                          minimumSize: const Size(48, 44),
+                        ),
+                        child: const Text('Coba lagi'),
+                      ),
+                    ],
+                  )
+                else
                   Text(
                     _fact.isEmpty ? 'Memuat fakta...' : _fact,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: Colors.white70,
-                      fontStyle: FontStyle.italic,
-                      height: 1.4,
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: _fact.isEmpty
+                          ? _subtle
+                          : Colors.white.withValues(alpha: 0.86),
+                      height: 1.55,
                     ),
                   ),
-                ],
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _PassportCard extends StatelessWidget {
-  const _PassportCard({
+class _Passport extends StatelessWidget {
+  const _Passport({
     required this.planets,
     required this.visited,
     required this.onOpen,
@@ -512,88 +734,315 @@ class _PassportCard extends StatelessWidget {
         .length;
     final progress = total == 0 ? 0.0 : (count / total).clamp(0.0, 1.0);
 
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Paspor Planet',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 720),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 28, 20, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Paspor Planet',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.3,
+                      ),
                     ),
                   ),
-                ),
-                Text(
-                  '$count/$total',
-                  style: theme.textTheme.labelLarge?.copyWith(
+                  Text(
+                    '$count/$total',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: AppColors.secondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                count == 0
+                    ? 'Buka satu planet untuk mulai mengisi paspor.'
+                    : '$count dari $total planet sudah kamu buka.',
+                style: theme.textTheme.bodySmall?.copyWith(color: _subtle),
+              ),
+              const SizedBox(height: 12),
+              Semantics(
+                label: 'Progres paspor',
+                value: '$count dari $total planet',
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: LinearProgressIndicator(
+                    value: progress,
+                    minHeight: 3,
+                    backgroundColor: _hairline,
                     color: AppColors.secondary,
-                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              SizedBox(
+                height: 84,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: planets.length,
+                  separatorBuilder: (_, _) => const SizedBox(width: 10),
+                  itemBuilder: (context, index) {
+                    final planet = planets[index];
+                    final name = planet['name'] as String? ?? '';
+                    return _PassportPlanet(
+                      name: name,
+                      texture: planet['texture'] as String? ?? '',
+                      visited: visited.contains(name),
+                      onTap: () => onOpen(name),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _PassportPlanet extends StatelessWidget {
+  const _PassportPlanet({
+    required this.name,
+    required this.texture,
+    required this.visited,
+    required this.onTap,
+  });
+
+  final String name;
+  final String texture;
+  final bool visited;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Semantics(
+      button: true,
+      label: visited ? '$name, sudah dikunjungi' : '$name, belum dikunjungi',
+      child: SizedBox(
+        width: 62,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(31),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: 52,
+                  height: 52,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Opacity(
+                        opacity: visited ? 1 : 0.32,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: visited
+                                  ? AppColors.secondary
+                                  : Colors.white24,
+                              width: visited ? 2 : 1,
+                            ),
+                            image: texture.isEmpty
+                                ? null
+                                : DecorationImage(
+                                    image: AssetImage(texture),
+                                    fit: BoxFit.cover,
+                                  ),
+                            color: const Color(0xFF1A1B1E),
+                          ),
+                        ),
+                      ),
+                      if (visited)
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            decoration: const BoxDecoration(
+                              color: AppColors.secondary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              size: 12,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: visited ? Colors.white : _subtle,
+                    fontWeight: visited ? FontWeight.w600 : FontWeight.w400,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 6),
-            Text(
-              '$count dari $total planet dikunjungi',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 10),
-            LinearProgressIndicator(
-              value: progress,
-              minHeight: 6,
-              backgroundColor: Colors.white12,
-              color: AppColors.secondary,
-              borderRadius: BorderRadius.circular(3),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              height: 40,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                physics: const BouncingScrollPhysics(),
-                itemCount: planets.length,
-                separatorBuilder: (_, _) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final planet = planets[index];
-                  final name = planet['name'] as String? ?? '';
-                  final isVisited = visited.contains(name);
-                  return ActionChip(
-                    avatar: Icon(
-                      isVisited ? Icons.check_circle : Icons.circle_outlined,
-                      size: 18,
-                      color: isVisited
-                          ? AppColors.secondary
-                          : Colors.white38,
-                    ),
-                    label: Text(name),
-                    onPressed: () => onOpen(name),
-                    backgroundColor: isVisited
-                        ? const Color(0xFF2A2210)
-                        : Colors.white10,
-                    side: BorderSide(
-                      color: isVisited
-                          ? AppColors.secondary.withValues(alpha: 0.5)
-                          : Colors.white24,
-                    ),
-                    labelStyle: TextStyle(
-                      color: isVisited ? Colors.white : Colors.white70,
-                      fontSize: 12,
-                    ),
-                  );
-                },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _HomeSkeleton extends StatelessWidget {
+  const _HomeSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Memuat planet',
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(height: 372, color: const Color(0xFF141517)),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 26, 20, 0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _SkeletonBar(width: 120, height: 20),
+                  SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _SkeletonBar(
+                          width: double.infinity,
+                          height: 196,
+                          radius: 18,
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: _SkeletonBar(
+                          width: double.infinity,
+                          height: 196,
+                          radius: 18,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 30),
+                  _SkeletonBar(width: double.infinity, height: 14),
+                  SizedBox(height: 10),
+                  _SkeletonBar(width: 220, height: 14),
+                ],
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SkeletonBar extends StatelessWidget {
+  const _SkeletonBar({
+    required this.width,
+    required this.height,
+    this.radius = 6,
+  });
+
+  final double width;
+  final double height;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1E22),
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
+  }
+}
+
+class _HomeMessage extends StatelessWidget {
+  const _HomeMessage({
+    required this.title,
+    required this.message,
+    required this.actionLabel,
+    required this.onAction,
+  });
+
+  final String title;
+  final String message;
+  final String actionLabel;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 360),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const _OrbitMark(size: 32),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  message,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: _subtle,
+                    height: 1.5,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                FilledButton(
+                  onPressed: onAction,
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.secondary,
+                    foregroundColor: Colors.black,
+                    minimumSize: const Size.fromHeight(48),
+                  ),
+                  child: Text(
+                    actionLabel,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
