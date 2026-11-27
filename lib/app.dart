@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:orbite/core/theme/app_theme.dart';
 import 'package:orbite/features/auth/presentation/pages/login_page.dart';
 import 'package:orbite/features/constellation/presentation/pages/constellation_page.dart';
+import 'package:orbite/features/eclipse/presentation/pages/eclipse_page.dart';
 import 'package:orbite/features/home/presentation/pages/cosmic_explore.dart';
 import 'package:orbite/features/interior/presentation/pages/interior_page.dart';
 import 'package:orbite/features/moon_phases/presentation/pages/moon_phases_page.dart';
@@ -9,6 +10,7 @@ import 'package:orbite/features/onboarding/presentation/pages/onboarding_page.da
 import 'package:orbite/features/planet_detail/presentation/pages/planet_detail_page.dart';
 import 'package:orbite/features/planet_focus/presentation/pages/planet_focus_page.dart';
 import 'package:orbite/features/quiz/presentation/pages/quiz_page.dart';
+import 'package:orbite/features/seasons/presentation/pages/seasons_page.dart';
 import 'package:orbite/features/solar_system/presentation/pages/home_page.dart';
 import 'package:orbite/features/solar_system/presentation/pages/planet_compare_page.dart';
 import 'package:orbite/features/solar_system/presentation/pages/planet_list_page.dart';
@@ -58,6 +60,12 @@ class App extends StatelessWidget {
       case '/moon-phases':
         page = const MoonPhasesPage();
         break;
+      case '/seasons':
+        page = const SeasonsPage();
+        break;
+      case '/eclipse':
+        page = const EclipsePage();
+        break;
       case '/constellations':
         page = const ConstellationPage();
         break;
@@ -80,9 +88,7 @@ class App extends StatelessWidget {
         );
         break;
       case '/quiz':
-        page = QuizPage(
-          planetName: settings.arguments as String? ?? 'Planet',
-        );
+        page = QuizPage(planetName: settings.arguments as String? ?? 'Planet');
         break;
       default:
         page = const OnboardingPage();

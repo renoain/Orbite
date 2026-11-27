@@ -106,3 +106,44 @@ lib/
 
 ### 📌 Catatan untuk OpenCode
 Saat membuat file baru, letakkan sesuai struktur di atas. Jangan menaruh logika API di `presentation/`. Jangan menaruh widget Flutter di `domain/`.
+
+## 7. Scene 3D Reusable
+
+Scene 3D baru memakai `ThreeSceneCanvas` di `lib/core/widgets/three_scene_canvas.dart`.
+
+- `ThreeSceneCanvas` menangani `FlutterGlPlugin`, `WebGLRenderer`, kamera, `OrbitControls`, ticker render, serta state loading dan error.
+- Halaman fitur hanya menyediakan `setup` (membangun objek scene) dan `onTick` (memperbarui simulasi).
+- `ThreeSceneController` memberi akses terbatas untuk render sekali dan mengatur posisi kamera.
+- `core` tidak mengimpor `features`; opsi renderer dibuat langsung di canvas.
+
+Fitur 3D yang memakai canvas ini:
+
+- `features/seasons/` — Musim & Kemiringan Bumi.
+- `features/eclipse/` — Gerhana Matahari/Bulan.
+- `features/interior/` — Interior planet cutaway.
+
+## 8. Catatan Implementasi 3D
+
+- Cutaway interior memakai setengah bola (`SphereGeometry` dengan `phiLength = π`) dan cakram lapisan, bukan clipping plane, karena dukungan clipping di `three_dart` belum terbukti lengkap.
+- Ketebalan lapisan disederhanakan; data ilmiah tetap mengacu ke NASA.
+- Scene gerhana memakai model ideal dengan orbit Bulan sejajar bidang ekliptika; keterbatasan ini ditampilkan di layar.
+- Semua scene memakai tekstur yang sudah ada; tidak ada aset biner baru.
+- Starfield memakai `Float32Array` dari `flutter_gl`.
+
+## 9. Network Layer (Flutter ↔ Laravel API)
+
+Lapisan jaringan disiapkan sebelum penyambungan UI. UI belum diubah pada tahap ini.
+
+- `lib/core/api/api_config.dart` — base URL dari `--dart-define=API_BASE_URL`, default `http://localhost:8000/api/v1`.
+- `lib/core/api/api_client.dart` — `ApiClient` berbasis `dio`; menyisipkan token Bearer lewat interceptor; memetakan `DioException` ke `AppFailure`.
+- `lib/core/error/app_failure.dart` — satu tipe error (`AppFailure` + `FailureKind`) untuk seluruh lapisan data.
+- Fitur `solar_system` menjadi pemilik data planet:
+  - `domain/entities/` — `PlanetSummary`, `PlanetDetail`, `InteriorLayer` (nama dibedakan dari entity 3D `Planet` yang berisi `BaseMesh`).
+  - `domain/repositories/planet_repository.dart` — antarmuka repository.
+  - `domain/usecases/` — `GetPlanets`, `GetPlanet`, `GetInteriorLayers`.
+  - `data/models/` — model `fromJson`/`toJson` manual.
+  - `data/datasources/planet_remote_data_source.dart` — panggilan endpoint `/planets`, `/planets/{id}`, `/planets/{id}/layers`.
+  - `data/repositories/planet_repository_impl.dart` — implementasi repository.
+- `lib/app/di.dart` — `AppDependencies` (DI manual) menyediakan `ApiClient`, repository, dan use case.
+
+Catatan model data: API mengembalikan `name` (Inggris) dan belum memuat field teknis (`distance`, `diameter`, `day_length`, `orbital_period`, `moons`, `texture`). Field tersebut masih berasal dari mock lokal sampai skema database diperluas.

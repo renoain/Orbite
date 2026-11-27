@@ -22,7 +22,9 @@
 - Login (dummy dulu, auth nanti)
 - Home: Tata surya 3D interaktif (rotasi, zoom, stop/play, fullscreen)
 - Detail Planet: Gambar, deskripsi, atmosfer, suhu, fakta unik
-- Interior Planet: Cross-section dengan hotspot
+- Interior Planet 3D: Cutaway lapisan dengan pemilih lapisan dan data kedalaman, suhu, serta komposisi
+- Musim & Kemiringan Bumi 3D: Orbit Bumi, kemiringan 23,4°, titik subsolar, dan timeline solstis/ekuinoks
+- Gerhana 3D: Simulasi Matahari–Bumi–Bulan, bayangan umbra/penumbra, dan status gerhana Matahari/Bulan
 - Trivia: Pertanyaan pilihan ganda (validasi di Laravel)
 
 ## 5. Fitur di Luar MVP (Backlog)

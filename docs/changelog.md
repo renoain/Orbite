@@ -1,3 +1,100 @@
+## [2026-11-27] - FEATURE - MEDIUM
+
+### Summary
+- Menyiapkan lapisan jaringan Flutter (dio) untuk integrasi dengan API Laravel, plus dokumentasi setup dan skema database. UI belum diubah pada tahap ini.
+
+### Files Added
+- `lib/core/api/api_config.dart` - base URL via `--dart-define=API_BASE_URL`
+- `lib/core/api/api_client.dart` - `ApiClient` dio, interceptor token Bearer, pemetaan `DioException` ke `AppFailure`
+- `lib/core/error/app_failure.dart` - satu tipe error (`AppFailure` + `FailureKind`)
+- `lib/app/di.dart` - DI manual `AppDependencies`
+- `lib/features/solar_system/domain/entities/planet_summary.dart`, `planet_detail.dart`, `interior_layer.dart`
+- `lib/features/solar_system/domain/repositories/planet_repository.dart`
+- `lib/features/solar_system/domain/usecases/get_planets.dart`, `get_planet.dart`, `get_interior_layers.dart`
+- `lib/features/solar_system/data/models/planet_summary_model.dart`, `planet_detail_model.dart`, `interior_layer_model.dart`
+- `lib/features/solar_system/data/datasources/planet_remote_data_source.dart`
+- `lib/features/solar_system/data/repositories/planet_repository_impl.dart`
+- `docs/setup-guide.md`, `docs/roadmap.md`
+
+### Files Modified
+- `pubspec.yaml`, `pubspec.lock` - tambah `dio: ^5.7.0`
+- `docs/database-schema.md`, `docs/api-contract.md`, `docs/architecture.md`, `AGENTS.md` - dokumentasi backend, lokasi proyek, dan network layer
+
+### Impact
+- Aplikasi punya jalur data API siap pakai (ApiClient, repository, use case) untuk tahap penyambungan UI berikutnya.
+- Dokumentasi mencantumkan lokasi `D:\project\orbite` dan `D:\project\orbite-api` serta cara menjalankan keduanya.
+- Backend Laravel berada di `D:\project\orbite-api` (di luar repo ini) dan didokumentasikan di `docs/`.
+
+### Verification
+- `flutter analyze`: **No issues found**
+- `flutter test`: **13 passed**
+
+---
+
+## [2026-11-26] - FEATURE - HIGH
+
+### Summary
+- Menambahkan tiga scene 3D edukatif: Musim & Kemiringan Bumi, Gerhana, dan Interior Planet cutaway. Menambahkan `ThreeSceneCanvas` reusable serta entry point di Explore dan Learn.
+
+### Files Added
+- `lib/core/widgets/three_scene_canvas.dart` - lifecycle GL, renderer, kamera, OrbitControls, ticker, state loading/error
+- `lib/features/seasons/presentation/pages/seasons_page.dart` - orbit Bumi, kemiringan 23,4°, titik subsolar, timeline musim
+- `lib/features/eclipse/presentation/pages/eclipse_page.dart` - simulasi Matahari–Bumi–Bulan, umbra/penumbra, status gerhana
+- `test/three_d_scenes_test.dart` - smoke test halaman Musim dan Gerhana
+- `docs/adr/003-scene-3d-reusable-dan-cutaway.md`
+
+### Files Modified
+- `lib/features/interior/presentation/pages/interior_page.dart` - cutaway 3D dengan pemilih lapisan dan detail lapisan
+- `lib/app.dart` - route `/seasons` dan `/eclipse`
+- `lib/features/home/presentation/pages/cosmic_explore.dart` - kartu Explore Musim Bumi dan Gerhana 3D; path gambar memakai aset yang ada
+- `lib/features/learn/presentation/pages/learn_page.dart` - menu cepat Musim Bumi dan Gerhana 3D
+- `docs/prd.md`, `docs/content-source.md`, `docs/assets-inventory.md`, `docs/navigation-flow.md`, `docs/architecture.md`
+
+### Impact
+- Pengguna dapat mempelajari kemiringan Bumi, gerhana, dan struktur interior planet lewat scene 3D interaktif.
+- Scene baru memakai tekstur yang sudah ada; tidak ada aset biner baru.
+- Halaman Interior tidak lagi berupa gambar 2D dengan hotspot, melainkan cutaway 3D dengan pemilih lapisan.
+- State loading dan error scene 3D konsisten lewat `ThreeSceneCanvas`.
+
+### Verification
+- `flutter analyze`: **No issues found**
+- `flutter test`: **13 passed**
+- `flutter build windows --debug`: **Sukses**
+
+---
+
+## [2026-11-26] - FEATURE - HIGH
+
+### Summary
+- Memperbaiki error kompilasi Home dan Daftar Planet, menambahkan kontrol kecepatan simulasi Tata Surya, mengganti preview planet menjadi 3D, serta merombak halaman Learn dan Trivia agar sesuai referensi `stitch_preview`.
+
+### Files Modified
+- `lib/features/home/presentation/pages/cosmic_explore.dart` - mengembalikan konstanta `_hairline`, `_muted`, `_subtle`, memperbaiki bracket `_DestinationCard` dan constructor `_OrbitMarkPainter`
+- `lib/features/solar_system/presentation/pages/planet_list_page.dart` - kartu planet memakai `RotatingPlanet3D`, ukuran mengikuti sel grid, widget rotasi 2D dihapus
+- `lib/features/solar_system/presentation/widgets/rotating_planet_3d.dart` - fallback 2D dihapus, state loading dan error 3D ditambahkan
+- `lib/features/solar_system/presentation/pages/solar_system_page.dart` - FAB kecepatan, bottom sheet slider 0.25x sampai 4x, preset 0.5x/1x/2x/4x, dan reset
+- `lib/features/solar_system/presentation/widgets/home_scene.dart` - parameter `speed` mengalikan delta animasi
+- `lib/features/learn/presentation/pages/learn_page.dart` - halaman Learn baru: Planet Hari Ini, Menu Cepat, Paspor Planet
+- `lib/features/trivia/presentation/pages/trivia_page.dart` - halaman Trivia baru: skor, progress, pilihan A-D, feedback, hasil, restart
+- `lib/features/solar_system/presentation/pages/home_page.dart` - memakai `LearnPage` dan `TriviaPage` fitur, menghapus implementasi inline
+- `lib/home/trivia_route.dart` - route `/trivia` memakai halaman Trivia baru
+- `test/learn_page_layout_test.dart`, `test/trivia_page_test.dart` - test layout dan alur Trivia
+- `test/home_pages_test.dart`, `test/planet_list_page_test.dart` - penyesuaian import dan animasi kontinu
+
+### Impact
+- Home dan Daftar Planet kembali dapat dikompilasi dan diuji
+- Planet di Daftar Planet tampil sebagai model 3D dengan state loading dan error
+- Kecepatan rotasi dan orbit Tata Surya dapat diatur 0.25x sampai 4x
+- Tab Learn dan Trivia memiliki struktur, state, dan alur yang lebih lengkap
+- Progres Paspor Planet ikut diperbarui saat tab Learn dibuka
+
+### Verification
+- `flutter analyze`: **No issues found**
+- `flutter test`: **11 passed**
+- Commit `bb3b660` di-push ke `origin/main`
+
+---
+
 ## [2026-11-23] - FEATURE - HIGH
 
 ### Summary

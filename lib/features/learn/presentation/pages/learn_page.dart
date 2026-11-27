@@ -289,6 +289,8 @@ class _QuickMenu extends StatelessWidget {
     final items = [
       (label: 'Daftar Planet', onTap: () => onOpenRoute('/planets')),
       (label: 'Bandingkan', onTap: () => onOpenRoute('/compare')),
+      (label: 'Musim Bumi', onTap: () => onOpenRoute('/seasons')),
+      (label: 'Gerhana 3D', onTap: () => onOpenRoute('/eclipse')),
       (label: 'Trivia', onTap: () => onOpenRoute('/trivia')),
       (label: 'Focus', onTap: onOpenFocus),
     ];

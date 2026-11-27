@@ -3,9 +3,12 @@
 1. **Onboarding** (3 slide) → Tombol "Mulai" → Login.
 2. **Login** (dummy dulu) → Tombol "Masuk" → Home.
 3. **Home** (Tata Surya 3D) → Klik Planet → Detail Planet.
-4. **Detail Planet** → Tombol "Lihat Interior" → Interior.
-5. **Interior** → Klik Hotspot → Bottom Sheet Info.
-6. **Trivia** (dari Detail/Interior) → Jawab → Skor (nanti).
+4. **Home → Jelajahi → Musim Bumi** → `/seasons` (orbit, kemiringan, timeline musim).
+5. **Home → Jelajahi → Gerhana 3D** → `/eclipse` (fase Bulan, bayangan, status gerhana).
+6. **Learn → Menu Cepat** → Musim Bumi / Gerhana 3D.
+7. **Detail Planet** → Tombol "Lihat Interior" → Interior 3D cutaway.
+8. **Interior 3D** → Pilih lapisan → Detail lapisan (kedalaman, suhu, komposisi).
+9. **Trivia** (dari Detail/Interior) → Jawab → Skor (nanti).
 
 ## Navigasi
 
@@ -53,6 +56,21 @@
   2. Berpindah planet (swipe horizontal).
   3. Memuat trivia dari API.
 - **Tidak ada loading popup** saat scroll vertikal antar layer (harus seamless).
+
+### 1.6 Scene 3D Tambahan
+
+- **Musim & Kemiringan Bumi** (`/seasons`):
+  - Orbit Bumi mengelilingi Matahari dengan sumbu miring 23,4°.
+  - Slider hari dan preset 21 Mar, 21 Jun, 23 Sep, 21 Des.
+  - Play/pause, kecepatan simulasi, dan penanda titik subsolar.
+- **Gerhana 3D** (`/eclipse`):
+  - Slider fase Bulan, status gerhana Matahari/Bulan, dan toggle bayangan.
+  - Preset kamera "Tampak atas" dan "Tampak samping".
+  - Penjelasan model ideal: orbit Bulan dianggap sejajar bidang ekliptika.
+- **Interior 3D** (`/interior`):
+  - Cutaway setengah bola dengan lapisan berwarna.
+  - Pemilih lapisan dan detail kedalaman, suhu, serta komposisi.
+  - Data lapisan disederhanakan untuk visualisasi.
 
 ## Tombol Kembali
 

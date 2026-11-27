@@ -36,7 +36,9 @@ class _CosmicExploreState extends State<CosmicExplore> {
       _error = null;
     });
     try {
-      final jsonString = await rootBundle.loadString('assets/mock/planets.json');
+      final jsonString = await rootBundle.loadString(
+        'assets/mock/planets.json',
+      );
       final list = json.decode(jsonString) as List<dynamic>;
       final planets = list
           .cast<Map<String, dynamic>>()
@@ -103,8 +105,10 @@ class _CosmicExploreState extends State<CosmicExplore> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final wide = constraints.maxWidth >= 600;
-        final heroHeight = (constraints.maxWidth * (wide ? 0.52 : 1.18))
-            .clamp(wide ? 320.0 : 372.0, 460.0);
+        final heroHeight = (constraints.maxWidth * (wide ? 0.52 : 1.18)).clamp(
+          wide ? 320.0 : 372.0,
+          460.0,
+        );
         return SingleChildScrollView(
           padding: EdgeInsets.only(
             bottom: MediaQuery.paddingOf(context).bottom + 104,
@@ -445,19 +449,31 @@ class _ExploreRail extends StatelessWidget {
     (
       title: 'Solar System',
       note: 'Model 3D interaktif',
-      image: 'assets/images/home/solar_system.jpg',
+      image: 'assets/textures/sun.jpg',
       route: '/solar-system',
     ),
     (
       title: 'Fase Bulan',
       note: 'Siklus satu bulan',
-      image: 'assets/images/home/moon_phase.jpg',
+      image: 'assets/images/surface/moon_surface.jpg',
       route: '/moon-phases',
+    ),
+    (
+      title: 'Musim Bumi',
+      note: 'Kemiringan & musim',
+      image: 'assets/images/surface/earth_surface.jpg',
+      route: '/seasons',
+    ),
+    (
+      title: 'Gerhana 3D',
+      note: 'Matahari, Bumi, Bulan',
+      image: 'assets/images/surface/moon_surface.jpg',
+      route: '/eclipse',
     ),
     (
       title: 'Konstelasi',
       note: 'Peta langit malam',
-      image: 'assets/images/home/constellation.jpg',
+      image: 'assets/textures/stars.jpg',
       route: '/constellations',
     ),
   ];
@@ -687,7 +703,9 @@ class _DailyFactState extends State<_DailyFact> {
                   Text(
                     _fact.isEmpty ? 'Memuat fakta...' : _fact,
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: _fact.isEmpty ? _subtle : Colors.white.withValues(alpha: 0.86),
+                      color: _fact.isEmpty
+                          ? _subtle
+                          : Colors.white.withValues(alpha: 0.86),
                       height: 1.55,
                     ),
                   ),
@@ -849,28 +867,28 @@ class _PassportPlanet extends StatelessWidget {
                                     image: AssetImage(texture),
                                     fit: BoxFit.cover,
                                   ),
-                          color: const Color(0xFF1A1B1E),
-                        ),
-                      ),
-                    ),
-                    if (visited)
-                      Positioned(
-                        right: 0,
-                        bottom: 0,
-                        child: Container(
-                          width: 18,
-                          height: 18,
-                          decoration: const BoxDecoration(
-                            color: AppColors.secondary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.check,
-                            size: 12,
-                            color: Colors.black,
+                            color: const Color(0xFF1A1B1E),
                           ),
                         ),
                       ),
+                      if (visited)
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            width: 18,
+                            height: 18,
+                            decoration: const BoxDecoration(
+                              color: AppColors.secondary,
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.check,
+                              size: 12,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
