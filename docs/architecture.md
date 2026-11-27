@@ -132,7 +132,7 @@ Fitur 3D yang memakai canvas ini:
 
 ## 9. Network Layer (Flutter ↔ Laravel API)
 
-Lapisan jaringan disiapkan sebelum penyambungan UI. UI belum diubah pada tahap ini.
+Lapisan jaringan disiapkan sebelum penyambungan UI. `PlanetListPage` dan `PlanetDetailPage` sudah memakai use case (`getPlanets`, `getPlanet`); layar lain (Learn, Compare, Explore, Trivia) masih memakai mock.
 
 - `lib/core/api/api_config.dart` — base URL dari `--dart-define=API_BASE_URL`, default `http://localhost:8000/api/v1`.
 - `lib/core/api/api_client.dart` — `ApiClient` berbasis `dio`; menyisipkan token Bearer lewat interceptor; memetakan `DioException` ke `AppFailure`.
@@ -146,4 +146,4 @@ Lapisan jaringan disiapkan sebelum penyambungan UI. UI belum diubah pada tahap i
   - `data/repositories/planet_repository_impl.dart` — implementasi repository.
 - `lib/app/di.dart` — `AppDependencies` (DI manual) menyediakan `ApiClient`, repository, dan use case.
 
-Catatan model data: API mengembalikan `name` (Inggris) dan belum memuat field teknis (`distance`, `diameter`, `day_length`, `orbital_period`, `moons`, `texture`). Field tersebut masih berasal dari mock lokal sampai skema database diperluas.
+Catatan model data: API kini mengembalikan `name_id`, `distance`, `diameter_km`, `day_length_hours`, `orbital_period_days`, `moons`, `gravity`, dan `texture_url` (lihat ADR 004). `image_url` akan berisi URL cloud saat produksi; `texture_url` dipakai untuk scene 3D saat dev.

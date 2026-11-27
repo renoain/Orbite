@@ -1,19 +1,21 @@
-import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:orbite/app/di.dart';
+import 'package:orbite/features/solar_system/domain/entities/planet_summary.dart';
 import 'package:orbite/features/solar_system/presentation/widgets/rotating_planet_3d.dart';
 
 class PlanetListPage extends StatefulWidget {
-  const PlanetListPage({super.key});
+  const PlanetListPage({super.key, this.loadPlanets});
+
+  final Future<List<PlanetSummary>> Function()? loadPlanets;
 
   @override
   State<PlanetListPage> createState() => _PlanetListPageState();
 }
 
 class _PlanetListPageState extends State<PlanetListPage> {
-  late Future<List<Map<String, dynamic>>> _future;
+  late Future<List<PlanetSummary>> _future;
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
 
@@ -29,13 +31,13 @@ class _PlanetListPageState extends State<PlanetListPage> {
     super.dispose();
   }
 
-  Future<List<Map<String, dynamic>>> _load() async {
-    final jsonString = await rootBundle.loadString('assets/mock/planets.json');
-    final list = json.decode(jsonString) as List<dynamic>;
-    return list
-        .cast<Map<String, dynamic>>()
-        .where((planet) => planet['id'] != 'sun')
-        .toList();
+  Future<List<PlanetSummary>> _load() {
+    final loader = widget.loadPlanets ?? () => AppDependencies.getPlanets();
+    return loader().then(
+      (planets) => planets
+          .where((planet) => planet.id != 'sun' && planet.displayName != 'Matahari')
+          .toList(),
+    );
   }
 
   void _retry() {
@@ -55,12 +57,12 @@ class _PlanetListPageState extends State<PlanetListPage> {
     return 2;
   }
 
-  List<Map<String, dynamic>> _filter(List<Map<String, dynamic>> planets) {
+  List<PlanetSummary> _filter(List<PlanetSummary> planets) {
     final q = _query.trim().toLowerCase();
     if (q.isEmpty) return planets;
     return planets.where((planet) {
-      final name = (planet['name'] as String? ?? '').toLowerCase();
-      final desc = (planet['description'] as String? ?? '').toLowerCase();
+      final name = planet.displayName.toLowerCase();
+      final desc = planet.description.toLowerCase();
       return name.contains(q) || desc.contains(q);
     }).toList();
   }
@@ -71,7 +73,7 @@ class _PlanetListPageState extends State<PlanetListPage> {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(title: const Text('Daftar Planet')),
-      body: FutureBuilder<List<Map<String, dynamic>>>(
+      body: FutureBuilder<List<PlanetSummary>>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -162,11 +164,19 @@ class _PlanetListPageState extends State<PlanetListPage> {
                             itemCount: planets.length,
                             itemBuilder: (context, index) {
                               final planet = planets[index];
-                              final name = planet['name'] as String? ?? '';
-                              final desc =
-                                  planet['description'] as String? ?? '';
-                              final texture = planet['texture'] as String? ?? '';
-                              return _PlanetCard(texture: texture, name: name, desc: desc, onTap: () => Navigator.pushNamed(context, '/focus', arguments: name));
+                              final texture = planet.textureUrl.isNotEmpty
+                                  ? planet.textureUrl
+                                  : planet.imageUrl;
+                              return _PlanetCard(
+                                texture: texture,
+                                name: planet.displayName,
+                                desc: planet.description,
+                                onTap: () => Navigator.pushNamed(
+                                  context,
+                                  '/focus',
+                                  arguments: planet.displayName,
+                                ),
+                              );
                             },
                           );
                         },

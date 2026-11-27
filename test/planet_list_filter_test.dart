@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:orbite/features/solar_system/presentation/pages/planet_list_page.dart';
 
+import 'support/fake_planets.dart';
+
 Future<void> _waitForLoad(WidgetTester tester) async {
   await tester.runAsync(() async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
@@ -16,7 +18,9 @@ void main() {
     tester,
   ) async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
-    await tester.pumpWidget(const MaterialApp(home: PlanetListPage()));
+    await tester.pumpWidget(
+      MaterialApp(home: PlanetListPage(loadPlanets: () async => fakePlanets())),
+    );
     await tester.pump();
     await _waitForLoad(tester);
 

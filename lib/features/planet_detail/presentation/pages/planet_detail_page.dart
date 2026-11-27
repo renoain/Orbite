@@ -1,23 +1,32 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:orbite/app/di.dart';
 import 'package:orbite/core/constants/nasa_images.dart';
 import 'package:orbite/core/widgets/nasa_image.dart';
+import 'package:orbite/features/solar_system/domain/entities/planet_detail.dart';
+import 'package:orbite/features/solar_system/domain/entities/planet_summary.dart';
 
 class PlanetDetailPage extends StatefulWidget {
   final String planetName;
+  final Future<List<PlanetSummary>> Function()? loadPlanets;
+  final Future<PlanetDetail> Function(String id)? loadPlanet;
 
-  const PlanetDetailPage({super.key, required this.planetName});
+  const PlanetDetailPage({
+    super.key,
+    required this.planetName,
+    this.loadPlanets,
+    this.loadPlanet,
+  });
 
   @override
   State<PlanetDetailPage> createState() => _PlanetDetailPageState();
 }
 
 class _PlanetDetailPageState extends State<PlanetDetailPage> {
-  late Future<_PlanetData?> _future;
+  late Future<PlanetDetail?> _future;
   bool _isFavorite = false;
   final TextEditingController _massController = TextEditingController(text: '70');
   double? _weightOnPlanet;
@@ -80,55 +89,70 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
     });
   }
 
-  Future<_PlanetData?> _load() async {
+  Future<PlanetDetail?> _load() async {
     try {
-      final jsonString = await rootBundle.loadString(
-        'assets/mock/planets.json',
-      );
-      final list = json.decode(jsonString) as List<dynamic>;
-      final jsonPlanet = list.firstWhere(
-        (p) => (p as Map<String, dynamic>)['name'] == widget.planetName,
-        orElse: () => null,
-      );
-      if (jsonPlanet == null) return null;
-      final planet = _PlanetData.fromJson(jsonPlanet as Map<String, dynamic>);
+      final loadPlanets =
+          widget.loadPlanets ?? () => AppDependencies.getPlanets();
+      final loadPlanet =
+          widget.loadPlanet ?? (id) => AppDependencies.getPlanet(id);
+
+      final summaries = await loadPlanets();
+      PlanetSummary? match;
+      for (final summary in summaries) {
+        if (summary.name == widget.planetName ||
+            summary.nameId == widget.planetName) {
+          match = summary;
+          break;
+        }
+      }
+      if (match == null) return null;
+
+      final planet = await loadPlanet(match.id);
       _saveLastViewed();
-      final candidates = <String>[
-        NasaImages.planet[planet.id] ?? '',
-        planet.imageUrl,
-        'assets/textures/2k_${planet.id}.jpg',
-        'assets/textures/${planet.id}.jpg',
-        'assets/textures/1${planet.id}.jpg',
-      ];
-      final seen = <String>{};
-      final filtered = <String>[];
-      for (final path in candidates) {
-        if (path.isEmpty || !seen.add(path)) continue;
+      await _prepareImages(planet);
+      return planet;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> _prepareImages(PlanetDetail planet) async {
+    final slug = planet.name.toLowerCase();
+    final candidates = <String>[
+      NasaImages.planet[slug] ?? '',
+      planet.textureUrl,
+      planet.imageUrl,
+      'assets/textures/2k_$slug.jpg',
+      'assets/textures/$slug.jpg',
+    ];
+    final seen = <String>{};
+    final filtered = <String>[];
+    for (final path in candidates) {
+      if (path.isEmpty || !seen.add(path)) continue;
+      if (path.startsWith('assets/')) {
         try {
           await rootBundle.load(path);
           filtered.add(path);
         } catch (_) {}
+      } else {
+        filtered.add(path);
       }
-      if (mounted) {
-        setState(() {
-          _images = filtered.isNotEmpty ? filtered : [planet.imageUrl];
-        });
-        if (filtered.length > 1) {
-          _imageTimer?.cancel();
-          _imageTimer = Timer.periodic(const Duration(seconds: 4), (_) {
-            if (!mounted || !_imageController.hasClients) return;
-            final next = (_imageController.page?.round() ?? 0) + 1;
-            _imageController.animateToPage(
-              next % filtered.length,
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeOutCubic,
-            );
-          });
-        }
-      }
-      return planet;
-    } catch (_) {
-      return null;
+    }
+    if (!mounted) return;
+    setState(() {
+      _images = filtered.isNotEmpty ? filtered : [planet.imageUrl];
+    });
+    if (filtered.length > 1) {
+      _imageTimer?.cancel();
+      _imageTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+        if (!mounted || !_imageController.hasClients) return;
+        final next = (_imageController.page?.round() ?? 0) + 1;
+        _imageController.animateToPage(
+          next % filtered.length,
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeOutCubic,
+        );
+      });
     }
   }
 
@@ -171,7 +195,7 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
           ),
         ],
       ),
-      body: FutureBuilder<_PlanetData?>(
+      body: FutureBuilder<PlanetDetail?>(
         future: _future,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -194,6 +218,10 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
               onAction: _retry,
             );
           }
+          final slug = planet.name.toLowerCase();
+          final fallbackImage = planet.textureUrl.isNotEmpty
+              ? planet.textureUrl
+              : planet.imageUrl;
           return SingleChildScrollView(
             controller: _scrollController,
             padding: const EdgeInsets.all(16),
@@ -206,26 +234,26 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
                       ? SizedBox(
                           height: 220,
                           child: PageView.builder(
-                             controller: _imageController,
-                             itemCount: _images.length,
-                             itemBuilder: (context, index) {
-                               return IgnorePointer(
-                                 child: NasaImage(
-                                   url: _images[index],
-                                   height: 220,
-                                   width: double.infinity,
-                                   fit: BoxFit.cover,
-                                 ),
-                               );
-                             },
+                            controller: _imageController,
+                            itemCount: _images.length,
+                            itemBuilder: (context, index) {
+                              return IgnorePointer(
+                                child: NasaImage(
+                                  url: _images[index],
+                                  height: 220,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                              );
+                            },
                           ),
                         )
                       : NasaImage(
                           url: _images.isNotEmpty
                               ? _images.first
-                              : (NasaImages.planet[planet.id] ??
-                                  (planet.imageUrl.isNotEmpty
-                                      ? planet.imageUrl
+                              : (NasaImages.planet[slug] ??
+                                  (fallbackImage.isNotEmpty
+                                      ? fallbackImage
                                       : 'assets/textures/2k_earth_daymap.jpg')),
                           height: 220,
                           width: double.infinity,
@@ -234,7 +262,7 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  planet.name,
+                  planet.displayName,
                   style: theme.textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -254,19 +282,19 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
                   children: [
                     _InfoChip(
                       icon: Icons.straighten,
-                      label: '${planet.diameter} km',
+                      label: '${planet.diameterKm ?? 0} km',
                     ),
                     _InfoChip(
                       icon: Icons.access_time,
-                      label: '${planet.dayLength} jam',
+                      label: '${planet.dayLengthHours ?? 0} jam',
                     ),
                     _InfoChip(
                       icon: Icons.public,
-                      label: '${planet.orbitalPeriod} hari',
+                      label: '${planet.orbitalPeriodDays ?? 0} hari',
                     ),
                     _InfoChip(
                       icon: Icons.brightness_3,
-                      label: '${planet.moons} bulan',
+                      label: '${planet.moons ?? 0} bulan',
                     ),
                   ],
                 ),
@@ -313,7 +341,7 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Berat Badan di ${planet.name}',
+                          'Berat Badan di ${planet.displayName}',
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -333,8 +361,8 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
                                 controller: _massController,
                                 keyboardType:
                                     const TextInputType.numberWithOptions(
-                                      decimal: true,
-                                    ),
+                                  decimal: true,
+                                ),
                                 decoration: const InputDecoration(
                                   labelText: 'Berat (kg)',
                                   border: OutlineInputBorder(),
@@ -349,8 +377,9 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
                                       _massController.text.trim(),
                                     ) ??
                                     0;
-                                final factor =
-                                    _surfaceGravity[planet.name] ?? 1.0;
+                                final factor = planet.gravity ??
+                                    _surfaceGravity[planet.displayName] ??
+                                    1.0;
                                 setState(() {
                                   _weightOnPlanet = mass * factor;
                                 });
@@ -362,7 +391,8 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
                         if (_weightOnPlanet != null) ...[
                           const SizedBox(height: 12),
                           Text(
-                            'Di ${planet.name}: ${_weightOnPlanet!.toStringAsFixed(1)} kg',
+                            'Di ${planet.displayName}: '
+                            '${_weightOnPlanet!.toStringAsFixed(1)} kg',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
@@ -373,12 +403,12 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 24),
-                if (planet.id == 'earth' || planet.id == 'mars')
+                if (slug == 'earth' || slug == 'mars')
                   ElevatedButton.icon(
                     onPressed: () => Navigator.pushNamed(
                       context,
                       '/interior',
-                      arguments: planet.name,
+                      arguments: planet.displayName,
                     ),
                     icon: const Icon(Icons.layers),
                     label: const Text('Lihat Interior'),
@@ -389,16 +419,16 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
                     icon: const Icon(Icons.layers),
                     label: const Text('Interior belum tersedia'),
                   ),
-                 const SizedBox(height: 12),
-                 OutlinedButton.icon(
-                   onPressed: () => Navigator.pushNamed(
-                     context,
-                     '/quiz',
-                     arguments: planet.name,
-                   ),
-                   icon: const Icon(Icons.quiz),
-                   label: const Text('Kuis Planet'),
-                 ),
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.pushNamed(
+                    context,
+                    '/quiz',
+                    arguments: planet.displayName,
+                  ),
+                  icon: const Icon(Icons.quiz),
+                  label: const Text('Kuis Planet'),
+                ),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: _toggleFavorite,
@@ -415,44 +445,6 @@ class _PlanetDetailPageState extends State<PlanetDetailPage> {
           );
         },
       ),
-    );
-  }
-}
-
-class _PlanetData {
-  final String id;
-  final String name;
-  final String description;
-  final String imageUrl;
-  final int diameter;
-  final double dayLength;
-  final int orbitalPeriod;
-  final int moons;
-  final String funFact;
-
-  const _PlanetData({
-    required this.id,
-    required this.name,
-    required this.description,
-    required this.imageUrl,
-    required this.diameter,
-    required this.dayLength,
-    required this.orbitalPeriod,
-    required this.moons,
-    required this.funFact,
-  });
-
-  factory _PlanetData.fromJson(Map<String, dynamic> json) {
-    return _PlanetData(
-      id: json['id'] as String? ?? '',
-      name: json['name'] as String? ?? '',
-      description: json['description'] as String? ?? '',
-      imageUrl: json['image_url'] as String? ?? '',
-      diameter: json['diameter'] as int? ?? 0,
-      dayLength: (json['dayLength'] as num?)?.toDouble() ?? 0,
-      orbitalPeriod: json['orbitalPeriod'] as int? ?? 0,
-      moons: json['moons'] as int? ?? 0,
-      funFact: json['funFact'] as String? ?? '',
     );
   }
 }

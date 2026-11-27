@@ -1,3 +1,78 @@
+## [2026-11-27] - INFRA - MEDIUM
+
+### Summary
+- Menambahkan jalur gambar Cloudinary (upload manual) lewat `IMAGE_CDN_BASE` + helper `ImageUrl`, dengan fallback aset lokal. `texture_url` tetap lokal untuk scene 3D.
+
+### Files Added
+- `config/orbite.php` (backend) - `image_cdn_base` dari env `IMAGE_CDN_BASE`
+- `app/Support/ImageUrl.php` (backend) - resolve public ID menjadi URL cloud + fallback
+
+### Files Modified
+- `PlanetSeeder`, `InteriorLayerSeeder` (backend) - `image_id` + fallback, idempoten via `updateOrCreate`
+- `InteriorLayer` model (backend) - memakai `HasUuids`
+- `docs/setup-guide.md` - panduan upload Cloudinary
+- `docs/adr/004-skema-planet-dan-strategi-gambar.md` - pembaruan keputusan cloud
+
+### Impact
+- `IMAGE_CDN_BASE` kosong → API memakai aset lokal (dev). Setelah upload + set env → `image_url` otomatis URL Cloudinary.
+- Tanpa kredensial/SDK di repo; hanya URL publik.
+
+### Verification
+- `php artisan db:seed` planet & interior: sukses, 8 planet / 8 layer tanpa duplikasi
+- `ImageUrl::resolve` fallback → `assets/textures/earth.jpg`; cloud → `https://res.cloudinary.com/.../orbite/planets/earth`
+
+---
+
+## [2026-11-27] - FEATURE - MEDIUM
+
+### Summary
+- Menyambungkan `PlanetListPage` dan `PlanetDetailPage` ke API Laravel, menggantikan `assets/mock/planets.json` di dua layar ini. Menambahkan loader injectable agar test tetap offline.
+
+### Files Modified
+- `lib/features/solar_system/presentation/pages/planet_list_page.dart` - memakai `AppDependencies.getPlanets`, filter Matahari, loader injectable, kartu pakai `textureUrl`
+- `lib/features/planet_detail/presentation/pages/planet_detail_page.dart` - memakai `getPlanets` + `getPlanet`, field API (`diameterKm`, `dayLengthHours`, dll.), `NasaImage` untuk asset/network, `gravity` dari API
+- `test/planet_list_page_test.dart`, `test/planet_list_filter_test.dart` - menyuntikkan data uji
+
+### Files Added
+- `test/support/fake_planets.dart` - data uji 8 planet + Matahari
+
+### Impact
+- Daftar dan detail planet kini memuat data dari API; mock tidak dipakai lagi di dua layar ini.
+- Test tetap berjalan offline lewat loader injectable.
+- Layar lain (Learn, Compare, Explore, Trivia) masih memakai mock dan disambungkan pada tahap berikutnya.
+
+### Verification
+- `flutter analyze`: **No issues found**
+- `flutter test`: **13 passed**
+
+---
+
+## [2026-11-27] - FEATURE - MEDIUM
+
+### Summary
+- Opsi A: memperluas skema `planets` dengan field teknis dan nama Indonesia, memperbarui API, lalu menyinkronkan model network layer. Gambar disiapkan untuk cloud storage lewat `image_url` (produksi) dan `texture_url` (dev).
+
+### Files Added
+- `docs/adr/004-skema-planet-dan-strategi-gambar.md` - keputusan skema planet dan strategi gambar cloud
+
+### Files Modified
+- `docs/database-schema.md`, `docs/api-contract.md` - kolom dan field baru
+- `lib/features/solar_system/domain/entities/planet_summary.dart`, `planet_detail.dart` - field teknis + `nameId` + `displayName`
+- `lib/features/solar_system/data/models/planet_summary_model.dart`, `planet_detail_model.dart` - parsing field baru
+- `docs/architecture.md` - catatan network layer diperbarui
+
+### Impact
+- `GET /planets` dan `GET /planets/{id}` kini mengembalikan `name_id`, `distance`, `diameter_km`, `day_length_hours`, `orbital_period_days`, `moons`, `gravity`, dan `texture_url`.
+- Model Flutter siap menerima data lengkap; UI belum disambungkan.
+- Backend Laravel berada di `D:\project\orbite-api` (di luar repo ini); seeder idempoten via `order`.
+
+### Verification
+- `flutter analyze`: **No issues found**
+- `flutter test`: **13 passed**
+- API dicek: `GET /api/v1/planets` mengembalikan field baru
+
+---
+
 ## [2026-11-27] - FEATURE - MEDIUM
 
 ### Summary

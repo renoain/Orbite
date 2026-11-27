@@ -14,14 +14,24 @@
     {
       "id": "42287733-c713-4609-9e7b-9ebd751ea1ec",
       "name": "Earth",
+      "name_id": "Bumi",
       "order": 3,
-      "description": "The only known planet to support life...",
-      "fun_fact": "Earth is the only planet not named after a Roman god.",
-      "image_url": "assets/images/earth.webp"
+      "description": "Satu-satunya planet yang diketahui memiliki kehidupan...",
+      "fun_fact": "Bumi adalah planet terpadat di tata surya.",
+      "image_url": "assets/textures/earth.jpg",
+      "texture_url": "assets/textures/earth.jpg",
+      "distance": 149.6,
+      "diameter_km": 12756,
+      "day_length_hours": 24,
+      "orbital_period_days": 365,
+      "moons": 1,
+      "gravity": 1
     }
   ]
 }
 ```
+
+`image_url` berisi URL cloud penuh di produksi; saat dev berisi path aset lokal. `texture_url` khusus untuk tekstur scene 3D (dev).
 
 ## 2. `GET /planets/{id}`
 
@@ -34,10 +44,20 @@
   "data": {
     "id": "42287733-c713-4609-9e7b-9ebd751ea1ec",
     "name": "Earth",
-    "description": "The only known planet to support life...",
-    "atmosphere": "The only known planet to support life...",
+    "name_id": "Bumi",
+    "order": 3,
+    "description": "Satu-satunya planet yang diketahui memiliki kehidupan...",
+    "atmosphere": "Satu-satunya planet yang diketahui memiliki kehidupan...",
     "surface_temp": "",
-    "fun_fact": "Earth is the only planet not named after a Roman god."
+    "fun_fact": "Bumi adalah planet terpadat di tata surya.",
+    "image_url": "assets/textures/earth.jpg",
+    "texture_url": "assets/textures/earth.jpg",
+    "distance": 149.6,
+    "diameter_km": 12756,
+    "day_length_hours": 24,
+    "orbital_period_days": 365,
+    "moons": 1,
+    "gravity": 1
   }
 }
 ```

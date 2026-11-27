@@ -7,11 +7,19 @@
 | Kolom | Tipe | Keterangan |
 |---|---|---|
 | id | CHAR(36) / UUID | Primary key |
-| name | VARCHAR(255) | Nama planet |
+| name | VARCHAR(255) | Nama planet (Inggris) |
+| name_id | VARCHAR(255) | Nama Indonesia untuk tampilan |
 | description | TEXT | Deskripsi planet |
 | fun_fact | TEXT | Fakta unik |
-| image_url | VARCHAR(255) | URL gambar planet |
+| image_url | VARCHAR(255) | URL gambar planet (URL cloud di produksi, path aset saat dev) |
 | order | INT | Urutan dari Matahari |
+| distance | DOUBLE | Jarak dari Matahari (juta km) |
+| diameter_km | INT UNSIGNED | Diameter (km) |
+| day_length_hours | DOUBLE | Lama hari (jam) |
+| orbital_period_days | INT UNSIGNED | Periode orbit (hari) |
+| moons | INT UNSIGNED | Jumlah bulan |
+| gravity | DOUBLE | Gravitasi (x Bumi) |
+| texture_url | VARCHAR(255) | Path tekstur lokal untuk scene 3D (dev) |
 | created_at | TIMESTAMP | Waktu dibuat |
 | updated_at | TIMESTAMP | Waktu diperbarui |
 

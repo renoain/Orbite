@@ -77,3 +77,30 @@ Jika ada error CORS, periksa `orbite-api/config/cors.php`.
 
 - Laravel: `storage/logs/laravel.log`
 - Flutter: `flutter doctor` untuk info sistem
+
+## 7. Cloud Storage (Cloudinary) — Upload Manual
+
+Gambar 2D (`image_url`) disajikan dari Cloudinary; tekstur 3D (`texture_url`) tetap lokal. Upload dilakukan manual sekali, lalu URL dibangun otomatis dari `IMAGE_CDN_BASE` + public ID.
+
+### Langkah
+1. Buat akun Cloudinary, catat **cloud name**.
+2. Upload gambar ke folder/public ID berikut (harus sama dengan seeder):
+   - Planet: `orbite/planets/mercury`, `venus`, `earth`, `mars`, `jupiter`, `saturn`, `uranus`, `neptune`.
+   - Interior (yang ada file): `orbite/interior/earth_crust`, `orbite/interior/mars_interior`.
+3. Set di `orbite-api/.env`:
+   ```env
+   IMAGE_CDN_BASE=https://res.cloudinary.com/<cloud_name>/image/upload/f_auto,q_auto
+   ```
+4. Terapkan:
+   ```bash
+   php artisan config:clear
+   php artisan db:seed --class=PlanetSeeder
+   php artisan db:seed --class=InteriorLayerSeeder
+   ```
+5. Verifikasi: `GET /api/v1/planets` → `image_url` berupa `https://...`.
+6. Untuk kembali ke aset lokal (dev), kosongkan `IMAGE_CDN_BASE` lalu reseed.
+
+### Catatan
+- Tanpa SDK/API key di aplikasi; cukup URL publik (aman untuk repo).
+- Lapisan interior planet selain Bumi/Mars belum punya public ID → masih memakai tekstur lokal. Tambahkan `image_id` di `InteriorLayerSeeder` bila gambarnya sudah diupload.
+- `f_auto,q_auto` membuat Cloudinary otomatis memilih format/kompresi terbaik.
